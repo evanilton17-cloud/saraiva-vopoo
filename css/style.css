@@ -1597,6 +1597,9 @@ main {
   .v-nuvem i {
     display: none;
   }
+  .v-bafo::before {
+    display: none;
+  }
   .part-fumo {
     display: none;
   }
@@ -2010,14 +2013,14 @@ h3 {
   top: -5%;
   height: 48vh;
   pointer-events: none;
-  opacity: 0.6;
-  filter: blur(24px);
-  -webkit-mask-image: linear-gradient(to bottom, #000 18%, rgba(0, 0, 0, 0.6) 55%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 18%, rgba(0, 0, 0, 0.6) 55%, transparent 100%);
+  opacity: 0.8;
+  filter: blur(20px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 22%, rgba(0, 0, 0, 0.62) 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 22%, rgba(0, 0, 0, 0.62) 55%, transparent 100%);
   background-image:
-    radial-gradient(46% 62% at 18% 38%, rgba(186, 210, 255, 0.18), transparent 70%),
-    radial-gradient(40% 58% at 52% 28%, rgba(160, 200, 255, 0.14), transparent 72%),
-    radial-gradient(44% 60% at 84% 42%, rgba(200, 220, 255, 0.16), transparent 72%);
+    radial-gradient(46% 62% at 18% 38%, rgba(196, 220, 255, 0.28), transparent 70%),
+    radial-gradient(40% 58% at 52% 28%, rgba(170, 208, 255, 0.22), transparent 72%),
+    radial-gradient(44% 60% at 84% 42%, rgba(208, 228, 255, 0.26), transparent 72%);
   background-size: 180% 100%, 190% 100%, 170% 100%;
   background-repeat: no-repeat;
   animation: varre-nuvem 84s ease-in-out infinite alternate;
@@ -2029,8 +2032,8 @@ h3 {
 .v-nuvem i {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(196, 218, 255, 0.3), rgba(196, 218, 255, 0.1) 55%, transparent 72%);
-  filter: blur(14px);
+  background: radial-gradient(circle, rgba(208, 228, 255, 0.5), rgba(208, 228, 255, 0.16) 55%, transparent 72%);
+  filter: blur(9px);
   opacity: 0;
   animation: varrer-puff 38s linear infinite;
   will-change: transform, opacity;
@@ -2118,9 +2121,42 @@ h3 {
   position: absolute;
   left: 34%;
   top: 63vh;
-  width: 320px;
-  height: 280px;
+  width: 0;
+  height: 0;
   pointer-events: none;
+}
+
+/* Vapor da boca voltado para a esquerda (o rapaz olha para o centro da rua) */
+.v-bafo.esq {
+  transform: scaleX(-1);
+}
+
+/* Coluna de vapor denso subindo da boca até o alto do cenário */
+.v-bafo::before {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 34px;
+  height: 340px;
+  margin-left: -17px;
+  background: linear-gradient(to top, rgba(200, 224, 255, 0.6), rgba(200, 224, 255, 0.24) 55%, transparent 97%);
+  filter: blur(11px);
+  transform-origin: bottom center;
+  animation: pilar 4.4s var(--ease-premium) infinite;
+  will-change: transform, opacity;
+}
+
+@keyframes pilar {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translateX(-7px) scaleY(0.96);
+  }
+  50% {
+    opacity: 0.95;
+    transform: translateX(7px) scaleY(1.07);
+  }
 }
 
 @media (max-width: 640px) {
@@ -2140,26 +2176,26 @@ h3 {
 }
 
 .v-bafo i:nth-child(1) {
-  width: 86px;
-  height: 86px;
-  left: 34%;
-  top: 52%;
+  width: 92px;
+  height: 92px;
+  left: -58px;
+  top: -74px;
   animation-delay: -0.2s;
 }
 
 .v-bafo i:nth-child(2) {
-  width: 108px;
-  height: 108px;
-  left: 8%;
-  top: 30%;
+  width: 116px;
+  height: 116px;
+  left: -128px;
+  top: -156px;
   animation-delay: -1.9s;
 }
 
 .v-bafo i:nth-child(3) {
-  width: 74px;
-  height: 74px;
-  right: 0;
-  top: 62%;
+  width: 80px;
+  height: 80px;
+  left: -186px;
+  top: -216px;
   animation-delay: -3.7s;
 }
 
