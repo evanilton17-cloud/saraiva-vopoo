@@ -1591,6 +1591,9 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .v-cena img {
+    animation: none;
+  }
   .part-fumo {
     display: none;
   }
@@ -1958,12 +1961,10 @@ h3 {
 /* Cena de fundo: rua escura, pessoa em pé vaporizando sob um poste fraco */
 .v-cena {
   position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  height: 58vh;
+  inset: 0;
+  overflow: hidden;
   pointer-events: none;
-  transform: translateY(var(--parC, 0px));
+  transform: translateY(var(--parC, 0px)) scale(1.02);
   will-change: transform;
 }
 
@@ -1971,9 +1972,31 @@ h3 {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  object-position: center bottom;
-  opacity: 0.9;
+  object-position: center 72%;
+  opacity: 0.88;
   user-select: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 88%, transparent 100%);
+  filter: brightness(0.82) contrast(1.03) saturate(1.06);
+  transform-origin: center;
+  animation: cena-lenta 48s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+.v-cena::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(120% 85% at 50% 8%, transparent 34%, rgba(5, 7, 12, 0.42) 100%);
+}
+
+@keyframes cena-lenta {
+  from {
+    transform: scale(1.05) translateX(-0.6%);
+  }
+  to {
+    transform: scale(1.13) translateX(0.8%);
+  }
 }
 
 /* Névoa que bate na borda de cima e se espalha pelo site inteiro */
@@ -2012,8 +2035,8 @@ h3 {
 }
 
 @media (max-width: 640px) {
-  .v-cena {
-    height: 46vh;
+  .v-cena img {
+    object-position: center 78%;
   }
   .v-nuvem {
     height: 38vh;
