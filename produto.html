@@ -4,37 +4,35 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Saraiva Vapor — Produto</title>
-  <meta name="description" content="Detalhes do produto, sabores e preço.">
+  <meta name="description" content="Saraiva Vapor — detalhes do produto: sabores, especificações e pedido direto no WhatsApp.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
   <div id="cabecalho"></div>
 
-  <main id="conteudo" class="container">
-    <div class="produto-detalhe" id="detalhe">
-      <div class="zoom-area glass" id="zoom-area">
-        <div class="zoom-grad" id="zoom-grad"></div>
-      </div>
-      <div class="painel-compra glass" id="painel-compra"></div>
+  <div class="b44-bg" aria-hidden="true">
+    <div class="v-glow-top"></div>
+    <div class="v-orb a"></div>
+    <div class="v-orb b"></div>
+    <div class="v-orb c"></div>
+    <div class="v-cena" id="v-cena">
+      <img src="img/pag2.jpg" alt="">
     </div>
-
-    <div id="nao-encontrado" style="display:none;padding:60px 0;text-align:center;">
-      <div class="vazio">
-        <b>Produto não encontrado</b>
-        <a href="catalogo.html" style="color:var(--accent-1);font-weight:700;">← Voltar ao catálogo</a>
-      </div>
+    <div class="v-nuvem" id="v-nuvem">
+      <i></i><i></i><i></i><i></i>
     </div>
+    <div class="v-bafo esq" style="left:73%;top:48%;">
+      <i></i><i></i><i></i>
+    </div>
+    <div class="v-smoke um"></div>
+    <div class="v-smoke dois"></div>
+    <div class="v-bottom"></div>
+  </div>
 
-    <section class="relacionados">
-      <div class="secao-titulo">
-        <h2>Produtos relacionados</h2>
-      </div>
-      <div class="grid-produtos" id="relacionados"></div>
-    </section>
-  </main>
+  <main id="conteudo" class="container pdp"></main>
 
   <div id="rodape"></div>
   <div id="wa-flutuante"></div>
@@ -43,64 +41,111 @@
   <script src="js/main.js?v=3"></script>
   <script src="js/cart.js?v=2"></script>
   <script>
-    montarPagina("pods");
-
     var slug = lerQuery("produto");
     var prod = produtoPorSlug(slug);
+
+    var raiz = document.getElementById("conteudo");
+
     if (!prod) {
-      document.getElementById("detalhe").style.display = "none";
-      document.getElementById("nao-encontrado").style.display = "block";
-      document.getElementById("relacionados").style.display = "none";
+      raiz.innerHTML =
+        '<div class="glass" style="padding:46px 30px;text-align:center;border-radius:22px;">' +
+        "<h1 style='font-size:26px;margin-bottom:10px;'>Produto não encontrado</h1>" +
+        '<p style="color:var(--texto-3);margin-bottom:22px;">O produto que você procura não existe ou foi removido.</p>' +
+        '<a class="btn btn-primario" href="catalogo.html">Ver todos os produtos</a>' +
+        "</div>";
     } else {
-      montarProduto(prod);
-    }
-
-    function montarProduto(prod) {
       var marca = marcaPorSlug(prod.marca);
-      document.title = prod.nome + " — Saraiva Vapor";
+      var temEstoque = produtoTemEstoque(prod);
+      var descontoPct = desconto(prod);
+      var g = gradiente(prod.cor1, prod.cor2);
 
-      document.getElementById("zoom-grad").innerHTML = "";
-      document.getElementById("zoom-grad").style.background = "";
-      var zoomGrad = document.getElementById("zoom-grad");
-      if (prod.imagem) {
-        zoomGrad.innerHTML = '<img src="' + prod.imagem + '" alt="' + prod.nome + '">';
-      } else {
-        zoomGrad.style.background = gradiente(prod.cor1, prod.cor2);
-        zoomGrad.textContent = iniciais(prod.nome);
+      var saborAtual = null;
+      var qtd = 1;
+
+      function painelArte(texto, detalhe) {
+        return (
+          '<div class="arte">' +
+          '<div style="text-align:center;">' +
+          '<div class="iniciais">' +
+          iniciais(prod.nome) +
+          "</div>" +
+          "<b>" +
+          (marca ? marca.nome : prod.marca) +
+          "</b>" +
+          "<span>" +
+          texto +
+          (detalhe ? "<br>" + detalhe : "") +
+          "</span>" +
+          "</div>" +
+          "</div>"
+        );
       }
 
-      var areaZoom = document.getElementById("zoom-area");
-      areaZoom.addEventListener("pointermove", function (e) {
-        var r = areaZoom.getBoundingClientRect();
-        var px = ((e.clientX - r.left) / r.width) * 100;
-        var py = ((e.clientY - r.top) / r.height) * 100;
-        areaZoom.style.setProperty("--ox", px + "%");
-        areaZoom.style.setProperty("--oy", py + "%");
-      });
+      var paineis = [
+        {
+          nome: "Produto",
+          html: prod.imagem
+            ? '<img src="' + prod.imagem + '" alt="' + prod.nome + '">'
+            : painelArte("Visão do produto", "")
+        },
+        {
+          nome: "Embalagem",
+          html: painelArte("Embalagem premium", prod.puffs ? prod.puffs.toLocaleString("pt-BR") + " puffs" : "")
+        },
+        {
+          nome: "Sabor",
+          html: painelArte(
+            "Sabores disponíveis",
+            (prod.sabores || []).slice(0, 4).map(function (s) { return s.nome; }).join(" · ")
+          )
+        }
+      ];
 
-      var emEstoque = produtoTemEstoque(prod);
-      var badgeEstoque = emEstoque
-        ? '<span class="pill badge-verde">● Em estoque</span>'
-        : '<span class="pill badge-vermelho">● Esgotado</span>';
-      var badgeNovo = prod.novidade ? '<span class="pill badge-violeta">NOVO</span>' : "";
-      var badgePromo = desconto(prod) > 0 ? '<span class="pill badge-verde">-' + desconto(prod) + "%</span>" : "";
-      var pillPuffs = prod.puffs ? '<span class="pill badge-borda">' + prod.puffs.toLocaleString("pt-BR") + " puffs</span>" : "";
-
-      var specs = prod.specs
-        .map(function (s) {
-          return '<div class="spec"><span class="k">' + s[0] + '</span><span class="v">' + s[1] + "</span></div>";
+      var minis = paineis
+        .map(function (p, i) {
+          return (
+            '<button class="pdp-mini' +
+            (i === 0 ? " ativo" : "") +
+            '" data-painel="' +
+            i +
+            '" title="' +
+            p.nome +
+            '" style="--g1:' +
+            prod.cor1 +
+            ";--g2:" +
+            prod.cor2 +
+            '">' +
+            p.html +
+            "</button>"
+          );
         })
         .join("");
 
-      var pilulas = prod.sabores
-        .map(function (s, i) {
-          var estado = s.estoque ? "ativo" : "desabilitado";
-          var seletor = s.estoque ? " data-escolher-sabor=\"" + i + "\"" : " disabled";
+      var tags = "";
+      tags += temEstoque
+        ? '<span class="pill badge-verde">● Em estoque</span>'
+        : '<span class="pill badge-vermelho">Esgotado</span>';
+      if (prod.novidade) tags += '<span class="pill badge-violeta">Novo</span>';
+      if (descontoPct > 0)
+        tags += '<span class="pill badge-borda">' + descontoPct + "% OFF</span>";
+      if (prod.puffs)
+        tags += '<span class="pill badge-borda">' + prod.puffs.toLocaleString("pt-BR") + " puffs</span>";
+
+      var precoLinha = "";
+      if (prod.precoPromo) {
+        precoLinha =
+          '<span class="de">' +
+          formatarPreco(prod.preco) +
+          "</span>";
+      }
+
+      var saboresHtml = (prod.sabores || [])
+        .map(function (s) {
           return (
-            '<button class="pill ' +
-            estado +
+            '<button type="button" class="opcao-sabor" data-sabor="' +
+            s.nome +
             '"' +
-            seletor +
+            (s.estoque ? "" : " disabled") +
             ">" +
             s.nome +
             "</button>"
@@ -108,96 +153,174 @@
         })
         .join("");
 
-      var painel = document.getElementById("painel-compra");
-      painel.innerHTML =
-        '<span class="marca-rota">' + (marca ? marca.nome : "") + " · " + (marca ? marca.categoria : "") + "</span>" +
+      var specs = (prod.specs || [])
+        .map(function (sp) {
+          return (
+            '<div class="pdp-spec"><b>' +
+            sp[0] +
+            "</b><span>" +
+            sp[1] +
+            "</span></div>"
+          );
+        })
+        .join("");
+
+      raiz.innerHTML =
+        '<nav class="pdp-trilha">' +
+        '<a class="voltar-link" href="index.html"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 19-7-7 7-7"/><path d="M19 12H5"/></svg> Início</a>' +
+        '<span>/</span>' +
+        '<a href="catalogo.html">Catálogo</a>' +
+        '<span>/</span>' +
+        '<span class="atual">' + prod.nome + "</span>" +
+        "</nav>" +
+
+        '<div class="pdp-corpo">' +
+
+        '<section class="pdp-galeria" style="--g1:' + prod.cor1 + ";--g2:" + prod.cor2 + '">' +
+        '<div class="pdp-cartela" id="pdp-cartela">' +
+        paineis[0].html +
+        "</div>" +
+        '<div class="pdp-minis">' + minis + "</div>" +
+        "</section>" +
+
+        '<section class="pdp-info glass">' +
+        '<div class="pdp-marca">' + (marca ? marca.nome : "") + "</div>" +
         "<h1>" + prod.nome + "</h1>" +
-        '<div class="badges-linha">' + badgeEstoque + badgeNovo + badgePromo + pillPuffs + "</div>" +
-        '<div class="specs">' + specs + "</div>" +
-        '<div class="preco-destaque"><span class="de" id="preco-de" hidden></span><span class="atual" id="preco-atual"></span></div>' +
-        '<div class="grupo-sabor"><h4>Escolha o sabor</h4><div class="pilulas-sabor" id="pilulas-sabor">' + pilulas + "</div></div>" +
-        '<div class="grupo-qtd"><h4>Quantidade</h4>' +
-        '<span class="stepper"><button id="qtd-menos" ' + (emEstoque ? "" : "disabled") + '>−</button><span class="qtd-valor" id="qtd-valor">1</span><button id="qtd-mais" ' + (emEstoque ? "" : "disabled") + '>+</button></span></div>' +
-        '<button class="btn btn-primario" id="btn-adicionar" ' + (emEstoque ? "" : "disabled") + '>' +
-        (emEstoque ? "Adicionar ao pedido" : "Produto esgotado") +
-        "</button>";
+        '<div class="pdp-tags">' + tags + "</div>" +
+        '<div class="pdp-preco-area">' +
+        '<div class="pdp-preco">' + precoLinha + formatarPreco(precoAtual(prod)) + "</div>" +
+        (descontoPct > 0 ? '<span class="pdp-desconto">-' + descontoPct + "%</span>" : "") +
+        "</div>" +
 
-      atualizarPreco(prod, null);
+        '<div class="pdp-bloco">' +
+        "<h4>Escolha o sabor</h4>" +
+        '<div class="opcoes-sabor" id="opcoes-sabor">' + saboresHtml + "</div>" +
+        "</div>" +
 
-      var qtd = 1;
-      var saborEscolhido = null;
-      var primeiro = null;
-      var idxPrimeiro = -1;
-      prod.sabores.forEach(function (s, i) {
-        if (s.estoque && primeiro === null) {
-          primeiro = s;
-          idxPrimeiro = i;
+        '<div class="pdp-bloco pdp-qtd-linha">' +
+        '<div class="pdp-stepper">' +
+        '<button type="button" id="pdp-menos" aria-label="Diminuir">−</button>' +
+        '<span class="valor" id="pdp-qtd">1</span>' +
+        '<button type="button" id="pdp-mais" aria-label="Aumentar">+</button>' +
+        "</div>" +
+        '<div class="pdp-total"><small>Total do pedido</small><strong id="pdp-total">' +
+        formatarPreco(precoAtual(prod)) +
+        "</strong></div>" +
+        "</div>" +
+
+        '<div class="pdp-ctas">' +
+        '<button class="btn btn-primario" id="pdp-add" ' +
+        (temEstoque ? "" : "disabled") +
+        '><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px;vertical-align:-3px;"><path d="M12 5v14M5 12h14"/></svg>Adicionar ao pedido</button>' +
+        '<a class="btn btn-whats" id="pdp-whats" href="#" target="_blank" rel="noopener" ' +
+        (temEstoque ? "" : 'style="opacity:.5;pointer-events:none;"') +
+        '><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor" style="margin-right:8px;vertical-align:-3px;"><path d="M12 2a10 10 0 0 0-8.6 15l-1.4 5 5.1-1.3A10 10 0 1 0 12 2Z"/></svg>Comprar agora</button>' +
+        "</div>" +
+
+        '<div class="pdp-specs">' + specs + "</div>" +
+
+        '<div class="pdp-extra">' +
+        "<span><svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z'/></svg> Compra com atendimento humano no WhatsApp</span>" +
+        "<span><svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M20 6 9 17l-5-5'/></svg> Verificação de maioridade (18+)</span>" +
+        "<span><svg width='15' height='15' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2'><path d='M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10Z'/></svg> Produtos originais e lacrados</span>" +
+        "</div>" +
+        "</section>" +
+
+        "</div>" +
+
+        '<section class="relacionados" id="relacionados">' +
+        '<div class="secao-titulo"><div><h2>Produtos relacionados</h2></div><a class="link-ver" href="catalogo.html">Ver tudo</a></div>' +
+        '<div class="grid-produtos" id="rel-grid"></div>' +
+        "</section>";
+
+      document.title = prod.nome + " — " + (BANCO_DADOS.nomeMarca || "Saraiva Vapor");
+
+      function atualizarTotal() {
+        document.getElementById("pdp-total").textContent = formatarPreco(precoAtual(prod) * qtd);
+        document.getElementById("pdp-qtd").textContent = qtd;
+      }
+
+      function linkWhats() {
+        var texto =
+          "Olá! 👋 Quero o *" +
+          prod.nome +
+          "*" +
+          (saborAtual ? " — sabor " + saborAtual : "") +
+          " — " +
+          qtd +
+          "x — " +
+          formatarPreco(precoAtual(prod) * qtd) +
+          ".";
+        return waLink(texto);
+      }
+
+      document.getElementById("pdp-cartela").style.setProperty("--g1", prod.cor1);
+      document.getElementById("pdp-cartela").style.setProperty("--g2", prod.cor2);
+
+      document.addEventListener("click", function (e) {
+        var mini = e.target.closest(".pdp-mini");
+        if (mini) {
+          document.querySelectorAll(".pdp-mini").forEach(function (m) {
+            m.classList.remove("ativo");
+          });
+          mini.classList.add("ativo");
+          document.getElementById("pdp-cartela").innerHTML =
+            paineis[Number(mini.dataset.painel)].html;
+          return;
+        }
+        var sabor = e.target.closest(".opcao-sabor");
+        if (sabor) {
+          saborAtual = sabor.dataset.sabor;
+          document.querySelectorAll(".opcao-sabor").forEach(function (b) {
+            b.classList.remove("ativo");
+          });
+          sabor.classList.add("ativo");
+          return;
         }
       });
-      if (primeiro) {
-        saborEscolhido = primeiro;
-        selecionarSabor(prod, idxPrimeiro);
-      }
 
-      function atualizarQtd() {
-        var v = document.getElementById("qtd-valor");
-        if (v) v.textContent = qtd;
-      }
-
-      document.getElementById("qtd-mais").addEventListener("click", function () {
-        qtd++;
-        atualizarQtd();
+      document.getElementById("pdp-menos").addEventListener("click", function () {
+        if (qtd > 1) {
+          qtd--;
+          atualizarTotal();
+        }
       });
-      document.getElementById("qtd-menos").addEventListener("click", function () {
-        if (qtd > 1) qtd--;
-        atualizarQtd();
+      document.getElementById("pdp-mais").addEventListener("click", function () {
+        if (qtd < 99) {
+          qtd++;
+          atualizarTotal();
+        }
       });
 
-      document.getElementById("btn-adicionar").addEventListener("click", function () {
-        if (!emEstoque || !saborEscolhido) return;
-        adicionarAoCarrinho(prod.id, saborEscolhido.nome, qtd);
+      document.getElementById("pdp-add").addEventListener("click", function () {
+        if (!temEstoque) return;
+        var sabor = saborAtual ||
+          ((prod.sabores || []).filter(function (s) { return s.estoque; })[0] || {}).nome;
+        adicionarAoCarrinho(prod.id, sabor || "", Number(qtd));
+        renderizarCarrinho();
         abrirCarrinho();
       });
 
-      painel.addEventListener("click", function (e) {
-        var alvo = e.target;
-        if (alvo.dataset && alvo.dataset.escolherSabor !== undefined) {
-          selecionarSabor(prod, Number(alvo.dataset.escolherSabor));
-        }
+      document.getElementById("pdp-whats").addEventListener("click", function () {
+        document.getElementById("pdp-whats").href = linkWhats();
       });
 
-      var rel = BANCO_DADOS.produtos.filter(function (p) {
-        return p.id !== prod.id && p.marca === prod.marca;
+      var relacionados = BANCO_DADOS.produtos.filter(function (p) {
+        return p.id !== prod.id;
       });
-      if (rel.length < 3) {
-        BANCO_DADOS.produtos.forEach(function (p) {
-          if (p.id !== prod.id && rel.length < 3 && rel.indexOf(p) === -1) rel.push(p);
-        });
-      }
-      renderizarCards(document.getElementById("relacionados"), rel, produtoCardHTML);
+      relacionados.sort(function (a, b) {
+        var am = a.marca === prod.marca ? 0 : 1;
+        var bm = b.marca === prod.marca ? 0 : 1;
+        return am - bm;
+      });
+      renderizarCards(
+        document.getElementById("rel-grid"),
+        relacionados.slice(0, 4),
+        produtoCardHTML
+      );
     }
 
-    function selecionarSabor(prod, idx) {
-      var s = prod.sabores[idx];
-      if (!s || !s.estoque) return;
-      var pilulas = document.getElementById("pilulas-sabor");
-      Array.prototype.forEach.call(pilulas.children, function (b, i) {
-        if (b.dataset && b.dataset.escolherSabor !== undefined) {
-          b.classList.toggle("ativo", i === idx);
-        }
-      });
-      atualizarPreco(prod, s);
-    }
-
-    function atualizarPreco(prod, sabor) {
-      var atual = document.getElementById("preco-atual");
-      var de = document.getElementById("preco-de");
-      atual.textContent = formatarPreco(precoAtual(prod));
-      if (prod.precoPromo) {
-        de.hidden = false;
-        de.textContent = formatarPreco(prod.preco);
-      }
-    }
+    montarPagina("produto");
   </script>
 </body>
 </html>
