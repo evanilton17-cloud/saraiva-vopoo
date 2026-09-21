@@ -68,61 +68,6 @@ img {
 }
 
 /* ---------- Camadas de fundo ---------- */
-.fundo-parallax {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-  background: var(--bg);
-}
-
-.fundo-foto {
-  position: absolute;
-  inset: -14%;
-  background-size: cover;
-  background-position: center;
-  filter: brightness(0.4) saturate(0.8);
-  transform: translateY(var(--par, 0px)) scale(1.15);
-  will-change: transform;
-}
-
-.fundo-fumaca {
-  position: absolute;
-  inset: -20%;
-  background-size: cover;
-  background-position: 50% 50%;
-  opacity: 0.35;
-  mix-blend-mode: screen;
-  animation: derivar-fumaca 60s ease-in-out infinite alternate;
-  transform: translateY(var(--par2, 0px)) scale(1.05);
-  will-change: transform, background-position;
-}
-
-@keyframes derivar-fumaca {
-  0% {
-    background-position: 50% 25%;
-  }
-  50% {
-    background-position: 57% 62%;
-  }
-  100% {
-    background-position: 43% 88%;
-  }
-}
-
-.fundo-mascara {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(
-    to bottom,
-    rgba(8, 8, 10, 0.94) 0%,
-    rgba(8, 8, 10, 0.5) 25%,
-    rgba(8, 8, 10, 0.35) 65%,
-    var(--bg) 100%
-  );
-}
-
 .fundo-canvas {
   position: fixed;
   inset: 0;
@@ -1646,10 +1591,6 @@ main {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .fundo-fumaca {
-    animation: none;
-  }
-
   .part-fumo {
     display: none;
   }
@@ -2014,46 +1955,87 @@ h3 {
   will-change: transform;
 }
 
-/* Homem vaporizando: silhueta escura (sem rosto/interface) contra o brilho azul */
-.v-silhueta {
+/* Cena de fundo: rua escura, pessoa em pé vaporizando sob um poste fraco */
+.v-cena {
   position: absolute;
-  right: -5%;
-  bottom: -8%;
-  width: 62vw;
-  max-width: 820px;
-  height: 118%;
-  background-image: url("https://images.pexels.com/photos/8780929/pexels-photo-8780929.jpeg?auto=compress&cs=tinysrgb&w=1920");
-  background-size: cover;
-  background-position: 58% 22%;
-  filter: brightness(0.14) saturate(0.3) contrast(1.18)
-    drop-shadow(0 0 26px rgba(140, 175, 255, 0.32));
-  mix-blend-mode: multiply;
-  opacity: 0.92;
-  -webkit-mask-image: linear-gradient(to bottom, #000 28%, rgba(0, 0, 0, 0.65) 62%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 28%, rgba(0, 0, 0, 0.65) 62%, transparent 100%);
-  transform: translateY(var(--parS, 0px)) scale(1.08);
-  will-change: transform;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 58vh;
   pointer-events: none;
+  transform: translateY(var(--parC, 0px));
+  will-change: transform;
+}
+
+.v-cena img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center bottom;
+  opacity: 0.9;
+  user-select: none;
+}
+
+/* Névoa que bate na borda de cima e se espalha pelo site inteiro */
+.v-nuvem {
+  position: absolute;
+  left: -12%;
+  right: -12%;
+  top: -4%;
+  height: 44vh;
+  pointer-events: none;
+  opacity: 0.5;
+  filter: blur(34px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 22%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 22%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+  background-image:
+    radial-gradient(46% 62% at 18% 38%, rgba(186, 210, 255, 0.17), transparent 70%),
+    radial-gradient(40% 58% at 52% 28%, rgba(160, 200, 255, 0.13), transparent 72%),
+    radial-gradient(44% 60% at 84% 42%, rgba(200, 220, 255, 0.15), transparent 72%);
+  background-size: 180% 100%, 190% 100%, 170% 100%;
+  background-repeat: no-repeat;
+  animation: varre-nuvem 96s ease-in-out infinite alternate;
+  transform: translateY(var(--parN, 0px));
+  will-change: transform, background-position;
+}
+
+@keyframes varre-nuvem {
+  0% {
+    background-position: 0% 0%, 100% 0%, 55% 0%;
+  }
+  50% {
+    background-position: 62% 0%, 18% 0%, 115% 0%;
+  }
+  100% {
+    background-position: 95% 0%, 42% 0%, 5% 0%;
+  }
 }
 
 @media (max-width: 640px) {
-  .v-silhueta {
-    right: -42%;
-    width: 150vw;
-    background-position: 55% 18%;
-    filter: brightness(0.13) saturate(0.3) contrast(1.15);
-    opacity: 0.85;
+  .v-cena {
+    height: 46vh;
+  }
+  .v-nuvem {
+    height: 38vh;
+    opacity: 0.4;
   }
 }
 
 /* Penachos da respiração do vapor: puxa (pausa) e sopra (pluma sobe) */
 .v-bafo {
   position: absolute;
-  right: 16%;
-  top: 9%;
-  width: 280px;
-  height: 240px;
+  left: 34%;
+  top: 63vh;
+  width: 320px;
+  height: 280px;
   pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  .v-bafo {
+    left: 26%;
+    top: 62vh;
+  }
 }
 
 .v-bafo i {

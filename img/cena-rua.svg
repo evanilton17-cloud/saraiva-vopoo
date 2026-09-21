@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" preserveAspectRatio="xMidYMax slice" role="img" aria-label="Silhueta de uma pessoa vaporizando em uma rua escura iluminada por um poste fraco">
+  <defs>
+    <radialGradient id="haloPoste" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffcd9b" stop-opacity="0.5"/>
+      <stop offset="40%" stop-color="#ffcd9b" stop-opacity="0.14"/>
+      <stop offset="100%" stop-color="#ffcd9b" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="poça" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ffc98a" stop-opacity="0.10"/>
+      <stop offset="100%" stop-color="#ffc98a" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="pluma" x1="0" y1="1" x2="0" y2="0">
+      <stop offset="0%" stop-color="#b6cbec" stop-opacity="0.55"/>
+      <stop offset="55%" stop-color="#b6cbec" stop-opacity="0.2"/>
+      <stop offset="100%" stop-color="#b6cbec" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="nevoeiro" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="12"/>
+    </filter>
+    <filter id="névoafina" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="22"/>
+    </filter>
+  </defs>
+
+  <!-- luz ambiente urbana atrás da pessoa -->
+  <circle cx="600" cy="380" r="220" fill="url(#haloPoste)" opacity="0.16"/>
+
+  <!-- silhueta da pessoa em pé, andando, braço no rosto -->
+  <g fill="#04060c" stroke="#04060c" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M468 462 L428 556 L416 720" stroke-width="30"/>
+    <path d="M512 462 L522 560 L568 720" stroke-width="30"/>
+    <path d="M490 460 C510 430 522 400 530 372" stroke-width="42"/>
+    <path d="M500 405 Q486 470 472 522" stroke-width="22" opacity="0.85"/>
+    <path d="M528 368 Q556 402 528 336" stroke-width="26"/>
+    <circle cx="506" cy="328" r="30"/>
+    <circle cx="532" cy="336" r="22"/>
+    <circle cx="526" cy="330" r="7"/>
+  </g>
+
+  <!-- reflexo no chão -->
+  <ellipse cx="500" cy="718" rx="150" ry="14" fill="#05070e"/>
+
+  <!-- silhueta do poste e luminária fraca -->
+  <path d="M150 720 L150 330 Q150 300 172 292 L322 290" stroke="#0a0f18" stroke-width="7" fill="none"/>
+  <circle cx="326" cy="268" r="13" fill="#d9b06a" opacity="0.5"/>
+  <circle cx="326" cy="266" r="120" fill="url(#haloPoste)" opacity="0.5"/>
+  <ellipse cx="340" cy="708" rx="260" ry="46" fill="url(#poça)"/>
+
+  <!-- fumaça saindo do rosto, subindo até a borda do site -->
+  <path d="M534 318 C548 250 520 205 566 158 C608 116 642 128 676 82" stroke="url(#pluma)" stroke-width="34" fill="none" stroke-linecap="round" filter="url(#nevoeiro)" opacity="0.62"/>
+  <path d="M518 300 C500 238 528 192 560 150 C596 106 586 66 642 56" stroke="url(#pluma)" stroke-width="46" fill="none" stroke-linecap="round" filter="url(#névoafina)" opacity="0.4"/>
+  <path d="M534 322 C548 300 558 288 554 268" stroke="url(#pluma)" stroke-width="18" fill="none" stroke-linecap="round" filter="url(#nevoeiro)" opacity="0.7"/>
+  <circle cx="600" cy="150" r="10" fill="#b6cbec" opacity="0.12"/>
+  <circle cx="668" cy="220" r="14" fill="#b6cbec" opacity="0.1"/>
+
+  <!-- névoa baixa no chão -->
+  <ellipse cx="700" cy="716" rx="420" ry="26" fill="#b6cbec" opacity="0.05" filter="url(#névoafina)"/>
+</svg>

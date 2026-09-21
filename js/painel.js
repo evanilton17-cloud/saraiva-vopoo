@@ -346,7 +346,7 @@ function renderConfig() {
     '<div style="display:flex;gap:18px;flex-wrap:wrap;">' +
     '<label class="campo-check"><input id="c-fumaca" type="checkbox" ' + (efeitos.fumaca !== false ? "checked" : "") + "> Fumaça animada de fundo</label>" +
     '<label class="campo-check"><input id="c-spotlight" type="checkbox" ' + (efeitos.spotlight !== false ? "checked" : "") + "> Spotlight seguindo o mouse</label>" +
-    '<label class="campo-check"><input id="c-parallax" type="checkbox" ' + (efeitos.parallax !== false ? "checked" : "") + "> Imagem de fundo com parallax</label>" +
+    '<label class="campo-check"><input id="c-parallax" type="checkbox" ' + (efeitos.parallax !== false ? "checked" : "") + "> Cena de fundo com parallax</label>" +
     "</div>" +
     '<div class="acoes-linha"><button class="btn btn-primario" id="salvar-config" type="button">Salvar configurações</button></div>';
 

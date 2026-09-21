@@ -296,26 +296,16 @@ function WA_FLUTUANTE_HTML() {
 /* ---------- Camadas de efeito ---------- */
 function montarParallax() {
   var cfg = BANCO_DADOS.fundo || {};
-  var el = document.createElement("div");
-  el.className = "fundo-parallax";
-  el.innerHTML =
-    '<div class="fundo-fumaca"></div>' +
-    '<div class="fundo-mascara"></div>';
-  document.body.insertBefore(el, document.body.firstChild);
-
-  var fumaca = el.querySelector(".fundo-fumaca");
-  if (fumaca && cfg.fumaca) fumaca.style.backgroundImage = 'url("' + cfg.fumaca + '")';
-
-  var silhueta = document.querySelector(".v-silhueta");
-  if (silhueta && cfg.foto) silhueta.style.backgroundImage = 'url("' + cfg.foto + '")';
+  var cena = document.getElementById("v-cena");
+  var nuvem = document.getElementById("v-nuvem");
 
   var agendado = false;
   function atualizar() {
     agendado = false;
     var y = window.scrollY || window.pageYOffset || 0;
     var vel = cfg.velocidadeParallax || 0.06;
-    if (fumaca) fumaca.style.setProperty("--par2", Math.round(-y * vel * 0.5) + "px");
-    if (silhueta) silhueta.style.setProperty("--parS", Math.round(-y * vel * 0.22) + "px");
+    if (cena) cena.style.setProperty("--parC", Math.round(-y * vel * 0.35) + "px");
+    if (nuvem) nuvem.style.setProperty("--parN", Math.round(-y * vel * 0.12) + "px");
   }
   window.addEventListener("scroll", function () {
     if (!agendado) {

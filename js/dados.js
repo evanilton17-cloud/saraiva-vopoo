@@ -9,11 +9,6 @@ var BANCO_DADOS = {
     spotlight: true,
     parallax: true
   },
-  fundo: {
-    foto: "https://images.pexels.com/photos/8780929/pexels-photo-8780929.jpeg?auto=compress&cs=tinysrgb&w=1920",
-    fumaca: "https://images.pexels.com/photos/38226824/pexels-photo-38226824.jpeg?auto=compress&cs=tinysrgb&w=1920",
-    velocidadeParallax: 0.06
-  },
   marcas: [
     { slug: "ignite", nome: "Ignite", categoria: "Pods", cor1: "#22d3ee", cor2: "#0e7490", imagem: "img/brand-ignite.jpg" },
     { slug: "elfbar-duke", nome: "ElfBar Duke", categoria: "Pods", cor1: "#a855f7", cor2: "#7e22ce", imagem: "img/brand-elfbar-duke.jpg" },
