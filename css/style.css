@@ -1594,6 +1594,9 @@ main {
   .v-cena img {
     animation: none;
   }
+  .v-nuvem i {
+    display: none;
+  }
   .part-fumo {
     display: none;
   }
@@ -2002,24 +2005,90 @@ h3 {
 /* Névoa que bate na borda de cima e se espalha pelo site inteiro */
 .v-nuvem {
   position: absolute;
-  left: -12%;
-  right: -12%;
-  top: -4%;
-  height: 44vh;
+  left: -15%;
+  right: -15%;
+  top: -5%;
+  height: 48vh;
   pointer-events: none;
-  opacity: 0.5;
-  filter: blur(34px);
-  -webkit-mask-image: linear-gradient(to bottom, #000 22%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
-  mask-image: linear-gradient(to bottom, #000 22%, rgba(0, 0, 0, 0.55) 55%, transparent 100%);
+  opacity: 0.6;
+  filter: blur(24px);
+  -webkit-mask-image: linear-gradient(to bottom, #000 18%, rgba(0, 0, 0, 0.6) 55%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 18%, rgba(0, 0, 0, 0.6) 55%, transparent 100%);
   background-image:
-    radial-gradient(46% 62% at 18% 38%, rgba(186, 210, 255, 0.17), transparent 70%),
-    radial-gradient(40% 58% at 52% 28%, rgba(160, 200, 255, 0.13), transparent 72%),
-    radial-gradient(44% 60% at 84% 42%, rgba(200, 220, 255, 0.15), transparent 72%);
+    radial-gradient(46% 62% at 18% 38%, rgba(186, 210, 255, 0.18), transparent 70%),
+    radial-gradient(40% 58% at 52% 28%, rgba(160, 200, 255, 0.14), transparent 72%),
+    radial-gradient(44% 60% at 84% 42%, rgba(200, 220, 255, 0.16), transparent 72%);
   background-size: 180% 100%, 190% 100%, 170% 100%;
   background-repeat: no-repeat;
-  animation: varre-nuvem 96s ease-in-out infinite alternate;
+  animation: varre-nuvem 84s ease-in-out infinite alternate;
   transform: translateY(var(--parN, 0px));
   will-change: transform, background-position;
+}
+
+/* Flocos de nuvem que varrem o site na largura, puxados com a fumaça da boca */
+.v-nuvem i {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(196, 218, 255, 0.3), rgba(196, 218, 255, 0.1) 55%, transparent 72%);
+  filter: blur(14px);
+  opacity: 0;
+  animation: varrer-puff 38s linear infinite;
+  will-change: transform, opacity;
+}
+
+.v-nuvem i:nth-of-type(1) {
+  width: 42vw;
+  height: 20vh;
+  left: -18vw;
+  top: 20%;
+  animation-duration: 40s;
+}
+
+.v-nuvem i:nth-of-type(2) {
+  width: 48vw;
+  height: 22vh;
+  left: 8vw;
+  top: 6%;
+  animation-duration: 54s;
+  animation-delay: -19s;
+}
+
+.v-nuvem i:nth-of-type(3) {
+  width: 32vw;
+  height: 17vh;
+  left: 52vw;
+  top: 12%;
+  animation-duration: 46s;
+  animation-delay: -10s;
+}
+
+.v-nuvem i:nth-of-type(4) {
+  width: 56vw;
+  height: 24vh;
+  left: 28vw;
+  top: 30%;
+  animation-duration: 62s;
+  animation-delay: -34s;
+}
+
+@keyframes varrer-puff {
+  0% {
+    transform: translateX(-8vw) scaleX(1);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.9;
+  }
+  55% {
+    opacity: 0.8;
+  }
+  92% {
+    opacity: 0.35;
+  }
+  100% {
+    transform: translateX(135vw) scaleX(2);
+    opacity: 0;
+  }
 }
 
 @keyframes varre-nuvem {
