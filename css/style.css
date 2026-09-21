@@ -1,21 +1,26 @@
 :root {
-  --bg: #08080a;
-  --bg-2: #0c0c10;
-  --bg-3: #121216;
-  --card: rgba(255, 255, 255, 0.04);
-  --card-2: rgba(255, 255, 255, 0.07);
+  --bg: #08090b;
+  --bg-2: #0b0d12;
+  --bg-3: #0e1017;
+  --card: rgba(255, 255, 255, 0.05);
+  --card-2: rgba(255, 255, 255, 0.09);
   --borda: rgba(255, 255, 255, 0.1);
-  --texto: #f1f5f9;
-  --texto-2: #9ca3b3;
-  --texto-3: #6b7280;
-  --accent-1: #22d3ee;
-  --accent-2: #a855f7;
+  --texto: #ffffff;
+  --texto-2: #a0a6b4;
+  --texto-3: #6d7280;
+  --accent-1: #aecaff;
+  --accent-2: #4f7cff;
+  --accent-3: #ffffff;
+  --accent-soft: rgba(158, 194, 255, 0.28);
   --verde: #25d366;
   --vermelho: #f43f5e;
   --fonte: "Inter", "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --fonte-display: "Sora", "Plus Jakarta Sans", system-ui, sans-serif;
   --radius: 16px;
   --sombra: 0 18px 50px rgba(0, 0, 0, 0.45);
-  --glow: 0 0 24px rgba(34, 211, 238, 0.28);
+  --glow: 0 0 24px rgba(158, 194, 255, 0.28);
+  --ease-premium: cubic-bezier(0.22, 1, 0.36, 1);
+  --shadow-lift: 0 24px 60px -28px rgba(0, 0, 0, 0.9), 0 0 50px -24px rgba(158, 194, 255, 0.5);
 }
 
 * {
@@ -31,8 +36,8 @@ html {
 body {
   font-family: var(--fonte);
   background:
-    radial-gradient(1000px 500px at 80% -10%, rgba(120, 80, 255, 0.09), transparent 60%),
-    radial-gradient(900px 480px at 10% 110%, rgba(34, 211, 238, 0.07), transparent 60%),
+    radial-gradient(1000px 500px at 80% -10%, rgba(110, 150, 255, 0.08), transparent 60%),
+    radial-gradient(900px 480px at 10% 110%, rgba(158, 194, 255, 0.06), transparent 60%),
     linear-gradient(180deg, var(--bg) 0%, var(--bg-2) 45%, var(--bg-3) 100%);
   color: var(--texto);
   line-height: 1.55;
@@ -1894,4 +1899,761 @@ main {
   color: var(--texto-2);
   font-size: 12px;
   line-height: 1.6;
+}
+
+/* ============================================================
+   CAMADA BASE44 — SARAIVA VAPOR · PODS PREMIUM
+   Visual idêntico à base44 (testada via headless), com degrade
+   azul→branco nas letras e fundo de fumaça mantido.
+   ============================================================ */
+.container {
+  width: min(1400px, 94%);
+}
+
+.font-display,
+.logo b,
+.hero h1,
+.hero h1 em,
+.marca-corpo h3,
+.marca-preco,
+.produto-info h2,
+.preco-primary,
+.secao-titulo h2,
+.cabecalho-pagina h1,
+.painel h2,
+h3 {
+  font-family: var(--fonte-display);
+}
+
+.grad-text {
+  background: linear-gradient(120deg, #9ec2ff 0%, #6f9dff 45%, #ffffff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 20px rgba(158, 194, 255, 0.3));
+}
+
+/* ---------- Camada de vapor (estilo base44) ---------- */
+.b44-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.b44-bg .v-glow-top {
+  position: absolute;
+  inset-inline: 0;
+  top: 0;
+  height: 78vh;
+  background: radial-gradient(130% 70% at 50% 0%, var(--accent-soft) 0%, transparent 72%);
+}
+
+.v-orb,
+.v-smoke {
+  position: absolute;
+  border-radius: 9999px;
+  filter: blur(90px);
+}
+
+.v-orb.a {
+  left: -20vw;
+  top: -20vw;
+  width: 80vw;
+  height: 80vw;
+  background: rgba(150, 190, 255, 0.2);
+  animation: vaporDriftA 34s linear -6s infinite;
+}
+
+.v-orb.b {
+  left: -15vw;
+  top: 5vw;
+  width: 65vw;
+  height: 65vw;
+  background: rgba(160, 130, 255, 0.16);
+  animation: vaporDriftB 41s linear -22s infinite;
+}
+
+.v-orb.c {
+  left: -25vw;
+  top: 20vw;
+  width: 90vw;
+  height: 90vw;
+  background: rgba(90, 150, 255, 0.14);
+  animation: vaporDriftC 49s linear -13s infinite;
+}
+
+.v-smoke.um {
+  right: 4%;
+  top: 30%;
+  width: 34vw;
+  height: 34vw;
+  background: rgba(190, 215, 255, 0.14);
+  animation: smokeRise 26s linear -4s infinite;
+  filter: blur(100px);
+}
+
+.v-smoke.dois {
+  right: 16%;
+  top: 46%;
+  width: 26vw;
+  height: 26vw;
+  background: rgba(160, 130, 255, 0.13);
+  animation: smokeRise 34s linear -18s infinite;
+  filter: blur(100px);
+}
+
+.v-hero-img {
+  position: absolute;
+  right: -6%;
+  top: -4%;
+  height: 125vh;
+  width: 86vw;
+  max-width: 900px;
+  will-change: transform;
+}
+
+.v-hero-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: top;
+  opacity: 0.78;
+  mix-blend-mode: screen;
+  user-select: none;
+  -webkit-mask-image: linear-gradient(to bottom, #000 55%, transparent 96%);
+  mask-image: linear-gradient(to bottom, #000 55%, transparent 96%);
+}
+
+.v-bottom {
+  position: absolute;
+  inset-inline: 0;
+  bottom: 0;
+  height: 256px;
+  background: linear-gradient(to top, var(--bg) 0%, transparent 100%);
+}
+
+@keyframes vaporDriftA {
+  0% {
+    opacity: 0;
+    transform: translate(-6%, -4%) scale(1);
+  }
+  45% {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 0;
+    transform: translate(5%, 5%) scale(1.18);
+  }
+}
+
+@keyframes vaporDriftB {
+  0% {
+    opacity: 0;
+    transform: translate(4%, -6%) scale(1.05);
+  }
+  50% {
+    opacity: 0.42;
+  }
+  to {
+    opacity: 0;
+    transform: translate(-5%, 4%) scale(1.22);
+  }
+}
+
+@keyframes vaporDriftC {
+  0% {
+    opacity: 0;
+    transform: translate(-3%, 6%) scale(1);
+  }
+  55% {
+    opacity: 0.34;
+  }
+  to {
+    opacity: 0;
+    transform: translate(4%, -4%) scale(1.2);
+  }
+}
+
+@keyframes smokeRise {
+  0% {
+    opacity: 0;
+    transform: translateY(12%) scale(0.9);
+  }
+  30% {
+    opacity: 0.85;
+  }
+  70% {
+    opacity: 0.5;
+  }
+  to {
+    opacity: 0;
+    transform: translate(-8%, -45%) scale(1.4);
+  }
+}
+
+/* ---------- Elevar o conteúdo acima das camadas ---------- */
+#cabecalho,
+#rodape,
+main,
+.wa-flutuante {
+  position: relative;
+  z-index: 2;
+}
+
+/* ---------- Logo / header ---------- */
+.logo b {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  background: linear-gradient(120deg, #9ec2ff 0%, #6f9dff 45%, #ffffff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 2px 16px rgba(158, 194, 255, 0.35));
+}
+
+.logo span {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  color: var(--texto-3);
+  text-transform: uppercase;
+  margin-top: 4px;
+}
+
+.nav {
+  gap: 32px;
+}
+
+.nav a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--texto-2);
+}
+
+.nav a::after {
+  bottom: -7px;
+  background: var(--accent-1);
+}
+
+.nav a.ativo {
+  color: var(--texto);
+}
+
+.buscar input {
+  font-size: 13px;
+}
+
+/* ---------- Hero ---------- */
+.hero {
+  text-align: left;
+  padding: 108px 0 34px;
+}
+
+.hero .etiqueta {
+  color: var(--texto-3);
+  text-shadow: none;
+  letter-spacing: 0.28em;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.hero .etiqueta::before,
+.hero .etiqueta::after {
+  content: "";
+}
+
+.hero h1 {
+  font-size: clamp(38px, 6vw, 62px);
+  font-weight: 800;
+  letter-spacing: -1px;
+  line-height: 1.06;
+  color: var(--texto);
+}
+
+.hero h1 em {
+  font-style: normal;
+  background: linear-gradient(120deg, #9ec2ff 0%, #6f9dff 45%, #ffffff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 4px 26px rgba(158, 194, 255, 0.35));
+}
+
+.hero p {
+  color: var(--texto-2);
+  margin: 14px 0 0;
+  max-width: 560px;
+  font-size: 15px;
+}
+
+/* ---------- Chips ---------- */
+.chip {
+  border-radius: 9999px;
+  padding: 9px 18px;
+  font-size: 13px;
+  font-weight: 600;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: var(--texto-2);
+}
+
+.chip:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--texto);
+}
+
+.chip.ativo {
+  background: linear-gradient(120deg, var(--accent-1), var(--accent-2));
+  border-color: transparent;
+  color: #0a0e18;
+  font-weight: 700;
+  box-shadow: 0 8px 24px -10px rgba(158, 194, 255, 0.7);
+}
+
+.contagem {
+  font-size: 12px;
+  color: var(--texto-3);
+}
+
+/* ---------- Cards de marcas (base44) ---------- */
+.grid-marcas {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 14px;
+  padding-bottom: 8px;
+}
+
+@media (min-width: 640px) {
+  .grid-marcas {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-marcas {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.marca-card {
+  position: relative;
+  min-height: 170px;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 24px;
+  background: rgba(14, 16, 22, 0.8);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+  transition: box-shadow 0.3s var(--ease-premium), transform 0.3s var(--ease-premium), border-color 0.3s;
+}
+
+.marca-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(158, 194, 255, 0.28);
+  box-shadow: var(--shadow-lift);
+}
+
+.marca-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.1;
+  transition: opacity 0.5s ease;
+}
+
+.marca-card:hover .marca-bg {
+  opacity: 0.18;
+}
+
+.marca-glow {
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 160px;
+  height: 160px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  filter: blur(50px);
+  opacity: 0.7;
+  transition: opacity 0.5s ease;
+}
+
+.marca-card:hover .marca-glow {
+  opacity: 1;
+}
+
+.marca-corpo {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: auto;
+  padding: 0;
+}
+
+.marca-corpo h3 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding-right: 0;
+  color: var(--texto);
+}
+
+.marca-sub {
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--texto-2);
+}
+
+.marca-rodape {
+  margin-top: 26px;
+  padding-top: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.marca-de {
+  display: flex;
+  flex-direction: column;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--texto-3);
+}
+
+.marca-preco {
+  font-size: 20px;
+  font-weight: 600;
+  color: var(--texto);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-top: 2px;
+}
+
+.marca-ver {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--texto);
+  white-space: nowrap;
+  transition: background 0.3s var(--ease-premium), color 0.3s, box-shadow 0.3s;
+}
+
+.marca-card:hover .marca-ver {
+  background: linear-gradient(120deg, var(--accent-1), var(--accent-2));
+  border-color: transparent;
+  color: #0a0e18;
+  box-shadow: 0 12px 32px -12px rgba(158, 194, 255, 0.8);
+}
+
+.marca-card:hover .marca-ver svg {
+  transform: translateX(3px);
+}
+
+.badge-novo {
+  position: absolute;
+  top: 60px;
+  left: 24px;
+  z-index: 1;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  background: rgba(158, 194, 255, 0.14);
+  border: 1px solid rgba(158, 194, 255, 0.5);
+  color: #c7dcff;
+}
+
+/* ---------- Cards de modelo/produto (base44) ---------- */
+.grid-produtos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
+}
+
+@media (min-width: 1024px) {
+  .grid-produtos {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.produto-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: 16px;
+  padding: 24px;
+  background: rgba(14, 16, 22, 0.8);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  transition: box-shadow 0.3s var(--ease-premium), border-color 0.3s, transform 0.3s var(--ease-premium);
+}
+
+.produto-card:hover {
+  box-shadow: var(--shadow-lift);
+  border-color: rgba(158, 194, 255, 0.28);
+  transform: translateY(-2px);
+}
+
+.produto-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.1;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.produto-card:hover .produto-bg {
+  opacity: 0.18;
+}
+
+.produto-glow {
+  position: absolute;
+  top: -34px;
+  right: -34px;
+  width: 144px;
+  height: 144px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  filter: blur(46px);
+  opacity: 0.7;
+  transition: opacity 0.5s ease;
+  pointer-events: none;
+}
+
+.produto-card:hover .produto-glow {
+  opacity: 1;
+}
+
+.produto-info {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0;
+}
+
+.produto-info h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--texto);
+  line-height: 1.25;
+}
+
+.produto-info h2 a {
+  color: inherit;
+}
+
+.preco-primary {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--accent-1);
+  margin-top: 8px;
+}
+
+.produto-info .puffs-linha {
+  margin-top: 6px;
+}
+
+.sabores-titulo {
+  margin-top: 16px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--texto-3);
+}
+
+.sabores-chips {
+  margin-top: 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.sabores-chips span {
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 5px 12px;
+  font-size: 12px;
+  color: var(--texto-2);
+}
+
+.produto-card .quick-add {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--texto);
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.3s var(--ease-premium);
+}
+
+.produto-card:hover .quick-add {
+  opacity: 1;
+  transform: none;
+}
+
+.quick-add:hover {
+  background: linear-gradient(120deg, var(--accent-1), var(--accent-2));
+  color: #0a0e18;
+  border-color: transparent;
+}
+
+/* ---------- CTA / contato (base44) ---------- */
+.cta {
+  position: relative;
+  overflow: hidden;
+  border-radius: 24px;
+  background: rgba(14, 16, 22, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.cta::before {
+  content: "";
+  position: absolute;
+  right: -64px;
+  top: -64px;
+  width: 224px;
+  height: 224px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  filter: blur(60px);
+}
+
+.cta h2 {
+  font-size: clamp(22px, 3.5vw, 30px);
+}
+
+.btn-whats {
+  background: #25d366;
+  color: #062b16;
+  border-radius: 12px;
+}
+
+.btn-whats:hover {
+  background: #2ee574;
+  color: #062b16;
+}
+
+.aviso-idade {
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.02);
+  color: var(--texto-3);
+  font-size: 13px;
+  text-align: center;
+}
+
+/* ---------- Footer (base44) ---------- */
+.rodape {
+  border-top: 1px solid rgba(255, 255, 255, 0.09);
+  background: rgba(8, 9, 11, 0.6);
+  padding: 22px 0;
+}
+
+.rodape-linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px 18px;
+  text-align: center;
+}
+
+.rodape-logo {
+  font-family: var(--fonte-display);
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+}
+
+.rodape-linha p {
+  font-size: 12px;
+  color: var(--texto-3);
+  margin: 0;
+}
+
+.rodape-linha .aviso {
+  color: #fbbf24;
+  font-weight: 500;
+}
+
+.rodape-linha a.painel-link {
+  font-size: 11px;
+  color: var(--texto-3);
+  opacity: 0.7;
+}
+
+.rodape-grid {
+  display: none;
+}
+
+/* ---------- Títulos de páginas internas ---------- */
+.cabecalho-pagina h1 {
+  font-size: clamp(28px, 4.5vw, 44px);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+}
+
+.voltar-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--texto-2);
+  transition: color 0.2s;
+}
+
+.voltar-link:hover {
+  color: var(--texto);
+}
+
+/* ---------- FAB do WhatsApp ---------- */
+.wa-flutuante {
+  border-radius: 50%;
+  background: #25d366;
+  color: #062b16;
+  width: 56px;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 16px 40px -12px rgba(37, 211, 102, 0.7);
 }

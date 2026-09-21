@@ -154,49 +154,60 @@ function marcaCardHTML(marca) {
 
 function produtoCardHTML(prod) {
   var marca = marcaPorSlug(prod.marca);
-  var badges = "";
-  if (prod.novidade) badges += '<span class="pill badge-violeta">NOVO</span>';
-  if (desconto(prod) > 0) badges += '<span class="pill badge-verde">-' + desconto(prod) + "%</span>";
-  if (!produtoTemEstoque(prod)) badges += '<span class="pill badge-vermelho">ESGOTADO</span>';
-
-  var puffs = prod.puffs ? '<span class="pill badge-borda">' + prod.puffs.toLocaleString("pt-BR") + " puffs</span>" : "";
-  var de = prod.precoPromo ? '<span class="de">' + formatarPreco(prod.preco) + "</span>" : "";
-  var qa = produtoTemEstoque(prod)
+  var temEstoque = produtoTemEstoque(prod);
+  var qa = temEstoque
     ? '<button class="quick-add" title="Adicionar ao pedido" data-add="' +
       prod.id +
       '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>'
     : "";
-  var estilo = prod.imagem
-    ? ""
-    : ' style="background:' + gradiente(prod.cor1, prod.cor2) + '"';
-  var marcaNome = marca ? marca.nome : "";
+  var img = prod.imagem ||
+    (marca && marca.imagem) ||
+    "";
+  var bg = img ? '<img class="produto-bg" src="' + img + '" alt="" loading="lazy">' : "";
+  var precoLinha =
+    prod.precoPromo
+      ? '<span class="de" style="text-decoration:line-through;color:var(--texto-3);font-size:13px;margin-right:10px;">' +
+        formatarPreco(prod.preco) +
+        "</span>"
+      : "";
+  var puffs = prod.puffs
+    ? '<span class="puffs-linha pill badge-borda">' + prod.puffs.toLocaleString("pt-BR") + " puffs</span>"
+    : "";
+  var sabores = prod.sabores
+    .map(function (s) {
+      return (
+        '<span' +
+        (s.estoque ? "" : ' style="opacity:0.4"') +
+        ">" +
+        s.nome +
+        "</span>"
+      );
+    })
+    .join("");
 
   return (
-    '<article class="produto-card glass">' +
-    '<a class="produto-foto" href="produto.html?produto=' +
+    '<article class="produto-card">' +
+    (qa || "") +
+    '<a class="produto-link" href="produto.html?produto=' +
     encodeURIComponent(prod.slug) +
-    '"' +
-    estilo +
-    ">" +
-    capaFoto(prod, badges, prod.nome) +
-    qa +
-    "</a>" +
+    '" style="display:block;">' +
+    bg +
+    '<span class="produto-glow"></span>' +
     '<div class="produto-info">' +
-    '<span class="marca-rota">' +
-    marcaNome +
-    "</span>" +
-    '<a href="produto.html?produto=' +
-    encodeURIComponent(prod.slug) +
-    '"><h3>' +
+    "<h2>" +
     prod.nome +
-    "</h3></a>" +
-    (puffs ? '<span class="puffs-linha">' + puffs + "</span>" : "") +
-    '<div class="preco-linha">' +
-    de +
-    "<strong>" +
+    "</h2>" +
+    '<p class="preco-primary">' +
+    precoLinha +
     formatarPreco(precoAtual(prod)) +
-    "</strong></div>" +
+    "</p>" +
+    (puffs ? puffs : "") +
+    '<p class="sabores-titulo">Sabores</p>' +
+    '<div class="sabores-chips">' +
+    sabores +
     "</div>" +
+    "</div>" +
+    "</a>" +
     "</article>"
   );
 }
@@ -237,7 +248,11 @@ function NAV_HTML(pagina) {
 function CABECALHO_HTML(pagina) {
   return (
     '<header class="cabecalho"><div class="container cabecalho-topo">' +
-    '<a class="logo" href="index.html"><b>SARA VAPE</b><span>Pods Premium</span></a>' +
+    '<a class="logo" href="index.html"><b>' +
+    (BANCO_DADOS.nomeMarca || "SARAIVA VAPOR") +
+    "</b><span>" +
+    (BANCO_DADOS.tagline || "Pods Premium") +
+    "</span></a>" +
     '<nav class="nav" id="nav">' +
     NAV_HTML(pagina) +
     "</nav>" +
@@ -256,27 +271,15 @@ function CABECALHO_HTML(pagina) {
 function RODAPE_HTML() {
   return (
     '<footer class="rodape"><div class="container">' +
-    '<div class="rodape-grid">' +
-    "<div><h4>Sara Vape</h4><ul>" +
-    "<li>Pods premium, refis e essências.</li>" +
-    "<li>Venda restrita a maiores de 18 anos.</li>" +
-    "</ul></div>" +
-    '<div><h4>Loja</h4><ul>' +
-    '<li><a href="index.html">Marcas</a></li>' +
-    '<li><a href="catalogo.html">Todos os pods</a></li>' +
-    '<li><a href="contato.html">Contato</a></li>' +
-    '<li><a href="painel.html">Painel</a></li>' +
-    "</ul></div>" +
-    '<div><h4>Atendimento</h4><ul>' +
-    "<li>Todos os dias</li>" +
-    '<li><a href="' +
-    waLink() +
-    '" target="_blank" rel="noopener">WhatsApp</a></li>' +
-    "</ul></div>" +
-    "</div>" +
-    '<div class="rodape-base">' +
-    "<p>© <span id=\"ano\"></span> SARA VAPE. Todos os direitos reservados.</p>" +
-    '<p class="aviso">Produtos de uso adulto. Consulte a legislação aplicável antes da compra.</p>' +
+    '<div class="rodape-linha">' +
+    '<span class="rodape-logo grad-text">' +
+    (BANCO_DADOS.nomeMarca || "SARAIVA VAPOR") +
+    "</span>" +
+    '<p>© <span id="ano"></span> ' +
+    (BANCO_DADOS.nomeMarca || "SARAIVA VAPOR") +
+    ". Todos os direitos reservados.</p>" +
+    '<p class="aviso">Venda proibida para menores de 18 anos.</p>' +
+    '<a class="painel-link" href="painel.html">Painel</a>' +
     "</div>" +
     "</div></footer>"
   );

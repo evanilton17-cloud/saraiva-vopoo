@@ -166,7 +166,8 @@ function renderizarCarrinho() {
   var itens = document.getElementById("carrinho-itens");
   var rodape = document.getElementById("carrinho-rodape");
   if (!itens || !rodape) return;
-  document.getElementById("carrinho-chekout").disabled = carrinho.length === 0;
+  var chekout = document.getElementById("carrinho-chekout");
+  if (chekout) chekout.disabled = carrinho.length === 0;
 
   if (!carrinho.length) {
     itens.innerHTML =

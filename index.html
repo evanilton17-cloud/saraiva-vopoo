@@ -3,53 +3,58 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Sara Vape — Pods Premium, modelos e sabores</title>
-  <meta name="description" content="Pods premium, refis e essências. Escolha sua marca, veja os modelos, os sabores e os preços.">
+  <title>Saraiva Vapor — Pods Premium, modelos e sabores</title>
+  <meta name="description" content="Saraiva Vapor — pods premium. Escolha sua marca e veja modelos, sabores e preços.">
   <meta http-equiv="Cache-Control" content="no-store">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=3">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
   <div id="cabecalho"></div>
 
+  <div class="b44-bg" aria-hidden="true">
+    <div class="v-glow-top"></div>
+    <div class="v-orb a"></div>
+    <div class="v-orb b"></div>
+    <div class="v-orb c"></div>
+    <div class="v-hero-img">
+      <img src="https://media.base44.com/images/public/6ab154e249b4e382ff947256/60f672892_generated_image.png" alt="">
+    </div>
+    <div class="v-smoke um"></div>
+    <div class="v-smoke dois"></div>
+    <div class="v-bottom"></div>
+  </div>
+
   <main id="conteudo">
-    <section class="hero">
-      <div class="container">
-        <span class="etiqueta">◆ Pods premium</span>
-        <h1>Pods em <em>destaque</em></h1>
-        <p>Os modelos com sabor, preço e estoque na frente. Toque em um produto para ver os sabores e adicionar ao pedido.</p>
-      </div>
+    <section class="hero container">
+      <span class="etiqueta">Pods premium</span>
+      <h1>Escolha sua <em>marca</em></h1>
+      <p>Toque na marca para ver os modelos, os sabores e os preços.</p>
     </section>
 
-    <section class="container">
-      <div class="barra-filtro" style="margin-bottom:18px;">
+    <section id="marcas" class="container" style="padding: 30px 0 8px;">
+      <div class="barra-filtro">
         <div class="chips" id="filtro-categorias"></div>
         <p class="contagem" id="contagem-catalogo"></p>
-      </div>
-      <div class="grid-produtos" id="grid-galeria"></div>
-    </section>
-
-    <section class="container">
-      <div class="secao-titulo">
-        <h2>Escolha por marca</h2>
-        <a class="link-ver" href="catalogo.html">Ver todos os produtos →</a>
       </div>
       <div class="grid-marcas" id="grid-marcas"></div>
     </section>
 
-    <section class="container">
-      <div class="cta glass" style="margin:20px 0 40px;padding:40px 24px;text-align:center;border-radius:20px;">
-        <h2 style="font-size:clamp(22px,3.5vw,30px);font-weight:800;">Não sabe qual escolher?</h2>
-        <p style="color:var(--texto-2);margin:10px auto 22px;max-width:440px;">Manda uma mensagem que a gente te ajuda a decidir o melhor modelo para você.</p>
-        <a class="btn btn-whats" href="#" id="cta-whats" target="_blank" rel="noopener">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.4 5 5.1-1.3A10 10 0 1 0 12 2Z"/></svg>
-          Falar com a loja
-        </a>
+    <section class="container" id="contato" style="padding: 36px 0 40px;">
+      <div class="cta">
+        <div style="padding: 44px 28px;" class="cta-inner">
+          <h2 style="font-weight: 800;">Não sabe qual escolher?</h2>
+          <p style="color: var(--texto-2); margin: 10px 0 24px; max-width: 460px;">Manda uma mensagem. A gente te ajuda a decidir o melhor modelo para você.</p>
+          <a class="btn btn-whats" href="#" id="cta-whats" target="_blank" rel="noopener">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20 9 13 20 4 4 11.5 2 15a30 30 0 0 0 6 5Z"/></svg>
+            Falar com a loja
+          </a>
+        </div>
       </div>
-      <div class="aviso-idade" style="margin:0 0 40px;">
-        Venda restrita a maiores de 18 anos. Produtos de uso adulto. Consulte a legislação aplicável antes da compra.
+      <div class="aviso-idade" style="margin-top: 22px; padding: 14px; border-radius: 14px;">
+        Venda proibida para menores de 18 anos. Produtos de uso adulto.
       </div>
     </section>
   </main>
@@ -58,7 +63,7 @@
   <div id="wa-flutuante"></div>
 
   <script src="js/dados.js?v=2"></script>
-  <script src="js/main.js?v=2"></script>
+  <script src="js/main.js?v=3"></script>
   <script src="js/cart.js?v=2"></script>
   <script>
     montarPagina("marcas");
@@ -81,34 +86,19 @@
 
     var catAtual = "all";
     function montarGrade() {
-      var listaMarcas =
+      var lista =
         catAtual === "all"
           ? BANCO_DADOS.marcas
           : BANCO_DADOS.marcas.filter(function (m) {
               return m.categoria === catAtual;
             });
-      renderizarCards(document.getElementById("grid-marcas"), listaMarcas, marcaCardHTML);
-
-      var listaProds = BANCO_DADOS.produtos.filter(function (p) {
-        if (catAtual === "all") return true;
-        var m = marcaPorSlug(p.marca);
-        return m && m.categoria === catAtual;
-      });
-      renderizarCards(document.getElementById("grid-galeria"), listaProds, produtoCardHTML);
-
+      renderizarCards(document.getElementById("grid-marcas"), lista, marcaCardHTML);
       var prods = 0;
-      listaMarcas.forEach(function (m) {
+      lista.forEach(function (m) {
         prods += produtosDaMarca(m.slug).length;
       });
       document.getElementById("contagem-catalogo").textContent =
-        listaMarcas.length +
-        " marca" +
-        (listaMarcas.length === 1 ? "" : "s") +
-        " · " +
-        prods +
-        " produto" +
-        (prods === 1 ? "" : "s") +
-        " no catálogo";
+        prods + " produto" + (prods === 1 ? "" : "s") + " no catálogo";
     }
 
     chipsEl.addEventListener("click", function (e) {

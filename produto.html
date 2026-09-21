@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Produto — Sara Vape</title>
+  <title>Saraiva Vapor — Produto</title>
   <meta name="description" content="Detalhes do produto, sabores e preço.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
   <div id="cabecalho"></div>
@@ -39,9 +39,9 @@
   <div id="rodape"></div>
   <div id="wa-flutuante"></div>
 
-  <script src="js/dados.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/cart.js"></script>
+  <script src="js/dados.js?v=2"></script>
+  <script src="js/main.js?v=3"></script>
+  <script src="js/cart.js?v=2"></script>
   <script>
     montarPagina("pods");
 
@@ -57,7 +57,7 @@
 
     function montarProduto(prod) {
       var marca = marcaPorSlug(prod.marca);
-      document.title = prod.nome + " — Sara Vape";
+      document.title = prod.nome + " — Saraiva Vapor";
 
       document.getElementById("zoom-grad").innerHTML = "";
       document.getElementById("zoom-grad").style.background = "";

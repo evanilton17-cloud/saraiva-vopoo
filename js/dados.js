@@ -1,7 +1,9 @@
 var BANCO_DADOS = {
   whatsapp: "5521999990000",
   whatsappTexto: "Olá! 👋 Gostaria de mais informações sobre os produtos.",
-  nomeSite: "Sara Vape",
+  nomeSite: "Saraiva Vapor",
+  nomeMarca: "SARAIVA VAPOR",
+  tagline: "Pods Premium",
   efeitos: {
     fumaca: true,
     spotlight: true,
