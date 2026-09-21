@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Produto — Sara Vape</title>
+  <meta name="description" content="Detalhes do produto, sabores e preço.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="cabecalho"></div>
+
+  <main id="conteudo" class="container">
+    <div class="produto-detalhe" id="detalhe">
+      <div class="zoom-area glass" id="zoom-area">
+        <div class="zoom-grad" id="zoom-grad"></div>
+      </div>
+      <div class="painel-compra glass" id="painel-compra"></div>
+    </div>
+
+    <div id="nao-encontrado" style="display:none;padding:60px 0;text-align:center;">
+      <div class="vazio">
+        <b>Produto não encontrado</b>
+        <a href="catalogo.html" style="color:var(--accent-1);font-weight:700;">← Voltar ao catálogo</a>
+      </div>
+    </div>
+
+    <section class="relacionados">
+      <div class="secao-titulo">
+        <h2>Produtos relacionados</h2>
+      </div>
+      <div class="grid-produtos" id="relacionados"></div>
+    </section>
+  </main>
+
+  <div id="rodape"></div>
+  <div id="wa-flutuante"></div>
+
+  <script src="js/dados.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    montarPagina("pods");
+
+    var slug = lerQuery("produto");
+    var prod = produtoPorSlug(slug);
+    if (!prod) {
+      document.getElementById("detalhe").style.display = "none";
+      document.getElementById("nao-encontrado").style.display = "block";
+      document.getElementById("relacionados").style.display = "none";
+    } else {
+      montarProduto(prod);
+    }
+
+    function montarProduto(prod) {
+      var marca = marcaPorSlug(prod.marca);
+      document.title = prod.nome + " — Sara Vape";
+
+      document.getElementById("zoom-grad").innerHTML = "";
+      document.getElementById("zoom-grad").style.background = "";
+      var zoomGrad = document.getElementById("zoom-grad");
+      if (prod.imagem) {
+        zoomGrad.innerHTML = '<img src="' + prod.imagem + '" alt="' + prod.nome + '">';
+      } else {
+        zoomGrad.style.background = gradiente(prod.cor1, prod.cor2);
+        zoomGrad.textContent = iniciais(prod.nome);
+      }
+
+      var areaZoom = document.getElementById("zoom-area");
+      areaZoom.addEventListener("pointermove", function (e) {
+        var r = areaZoom.getBoundingClientRect();
+        var px = ((e.clientX - r.left) / r.width) * 100;
+        var py = ((e.clientY - r.top) / r.height) * 100;
+        areaZoom.style.setProperty("--ox", px + "%");
+        areaZoom.style.setProperty("--oy", py + "%");
+      });
+
+      var emEstoque = produtoTemEstoque(prod);
+      var badgeEstoque = emEstoque
+        ? '<span class="pill badge-verde">● Em estoque</span>'
+        : '<span class="pill badge-vermelho">● Esgotado</span>';
+      var badgeNovo = prod.novidade ? '<span class="pill badge-violeta">NOVO</span>' : "";
+      var badgePromo = desconto(prod) > 0 ? '<span class="pill badge-verde">-' + desconto(prod) + "%</span>" : "";
+      var pillPuffs = prod.puffs ? '<span class="pill badge-borda">' + prod.puffs.toLocaleString("pt-BR") + " puffs</span>" : "";
+
+      var specs = prod.specs
+        .map(function (s) {
+          return '<div class="spec"><span class="k">' + s[0] + '</span><span class="v">' + s[1] + "</span></div>";
+        })
+        .join("");
+
+      var pilulas = prod.sabores
+        .map(function (s, i) {
+          var estado = s.estoque ? "ativo" : "desabilitado";
+          var seletor = s.estoque ? " data-escolher-sabor=\"" + i + "\"" : " disabled";
+          return (
+            '<button class="pill ' +
+            estado +
+            '"' +
+            seletor +
+            ">" +
+            s.nome +
+            "</button>"
+          );
+        })
+        .join("");
+
+      var painel = document.getElementById("painel-compra");
+      painel.innerHTML =
+        '<span class="marca-rota">' + (marca ? marca.nome : "") + " · " + (marca ? marca.categoria : "") + "</span>" +
+        "<h1>" + prod.nome + "</h1>" +
+        '<div class="badges-linha">' + badgeEstoque + badgeNovo + badgePromo + pillPuffs + "</div>" +
+        '<div class="specs">' + specs + "</div>" +
+        '<div class="preco-destaque"><span class="de" id="preco-de" hidden></span><span class="atual" id="preco-atual"></span></div>' +
+        '<div class="grupo-sabor"><h4>Escolha o sabor</h4><div class="pilulas-sabor" id="pilulas-sabor">' + pilulas + "</div></div>" +
+        '<div class="grupo-qtd"><h4>Quantidade</h4>' +
+        '<span class="stepper"><button id="qtd-menos" ' + (emEstoque ? "" : "disabled") + '>−</button><span class="qtd-valor" id="qtd-valor">1</span><button id="qtd-mais" ' + (emEstoque ? "" : "disabled") + '>+</button></span></div>' +
+        '<button class="btn btn-primario" id="btn-adicionar" ' + (emEstoque ? "" : "disabled") + '>' +
+        (emEstoque ? "Adicionar ao pedido" : "Produto esgotado") +
+        "</button>";
+
+      atualizarPreco(prod, null);
+
+      var qtd = 1;
+      var saborEscolhido = null;
+      var primeiro = null;
+      var idxPrimeiro = -1;
+      prod.sabores.forEach(function (s, i) {
+        if (s.estoque && primeiro === null) {
+          primeiro = s;
+          idxPrimeiro = i;
+        }
+      });
+      if (primeiro) {
+        saborEscolhido = primeiro;
+        selecionarSabor(prod, idxPrimeiro);
+      }
+
+      function atualizarQtd() {
+        var v = document.getElementById("qtd-valor");
+        if (v) v.textContent = qtd;
+      }
+
+      document.getElementById("qtd-mais").addEventListener("click", function () {
+        qtd++;
+        atualizarQtd();
+      });
+      document.getElementById("qtd-menos").addEventListener("click", function () {
+        if (qtd > 1) qtd--;
+        atualizarQtd();
+      });
+
+      document.getElementById("btn-adicionar").addEventListener("click", function () {
+        if (!emEstoque || !saborEscolhido) return;
+        adicionarAoCarrinho(prod.id, saborEscolhido.nome, qtd);
+        abrirCarrinho();
+      });
+
+      painel.addEventListener("click", function (e) {
+        var alvo = e.target;
+        if (alvo.dataset && alvo.dataset.escolherSabor !== undefined) {
+          selecionarSabor(prod, Number(alvo.dataset.escolherSabor));
+        }
+      });
+
+      var rel = BANCO_DADOS.produtos.filter(function (p) {
+        return p.id !== prod.id && p.marca === prod.marca;
+      });
+      if (rel.length < 3) {
+        BANCO_DADOS.produtos.forEach(function (p) {
+          if (p.id !== prod.id && rel.length < 3 && rel.indexOf(p) === -1) rel.push(p);
+        });
+      }
+      renderizarCards(document.getElementById("relacionados"), rel, produtoCardHTML);
+    }
+
+    function selecionarSabor(prod, idx) {
+      var s = prod.sabores[idx];
+      if (!s || !s.estoque) return;
+      var pilulas = document.getElementById("pilulas-sabor");
+      Array.prototype.forEach.call(pilulas.children, function (b, i) {
+        if (b.dataset && b.dataset.escolherSabor !== undefined) {
+          b.classList.toggle("ativo", i === idx);
+        }
+      });
+      atualizarPreco(prod, s);
+    }
+
+    function atualizarPreco(prod, sabor) {
+      var atual = document.getElementById("preco-atual");
+      var de = document.getElementById("preco-de");
+      atual.textContent = formatarPreco(precoAtual(prod));
+      if (prod.precoPromo) {
+        de.hidden = false;
+        de.textContent = formatarPreco(prod.preco);
+      }
+    }
+  </script>
+</body>
+</html>

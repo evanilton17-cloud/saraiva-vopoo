@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Todos os pods — Sara Vape</title>
+  <meta name="description" content="Catálogo completo de pods, refis, essências e acessórios com filtros e busca.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="cabecalho"></div>
+
+  <main id="conteudo" class="container catalogo">
+    <aside class="filtros glass" id="painel-filtros">
+      <h3>Disponibilidade</h3>
+      <div class="filtros-lista">
+        <label class="grupo-check"><input type="checkbox" id="filtro-estoque"> Apenas em estoque</label>
+        <label class="grupo-check"><input type="checkbox" id="filtro-promo"> Em promoção</label>
+      </div>
+
+      <h3>Marcas</h3>
+      <div class="filtros-lista" id="filtro-marcas"></div>
+
+      <button class="limpar-filtros" id="limpar-filtros">Limpar filtros</button>
+    </aside>
+
+    <section>
+      <div class="secao-titulo" style="margin-top:26px;">
+        <h2>Catálogo</h2>
+        <button class="btn btn-ghost toggle-filtros" id="toggle-filtros" style="padding:10px 16px;font-size:13px;">
+          Filtros
+        </button>
+      </div>
+      <div class="barra-ordenacao">
+        <span class="resultado-info" id="resultado-info"></span>
+        <select id="ordenacao" aria-label="Ordenar produtos">
+          <option value="relevancia">Relevância</option>
+          <option value="menor">Menor preço</option>
+          <option value="maior">Maior preço</option>
+        </select>
+      </div>
+      <div class="grid-produtos" id="grid-produtos"></div>
+    </section>
+  </main>
+
+  <div id="rodape"></div>
+  <div id="wa-flutuante"></div>
+
+  <script src="js/dados.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    montarPagina("pods");
+
+    var grid = document.getElementById("grid-produtos");
+    var info = document.getElementById("resultado-info");
+    var caixaEstoque = document.getElementById("filtro-estoque");
+    var caixaPromo = document.getElementById("filtro-promo");
+    var areaMarcas = document.getElementById("filtro-marcas");
+
+    var marcasMarcadas = {};
+    BANCO_DADOS.marcas.forEach(function (m) {
+      marcasMarcadas[m.slug] = true;
+    });
+
+    areaMarcas.innerHTML = BANCO_DADOS.marcas.map(function (m) {
+      return (
+        '<label class="grupo-check"><input type="checkbox" data-marca="' +
+        m.slug +
+        '" checked> ' +
+        m.nome +
+        " (" +
+        produtosDaMarca(m.slug).length +
+        ")</label>"
+      );
+    }).join("");
+
+    areaMarcas.addEventListener("change", function (e) {
+      var box = e.target;
+      if (box.dataset && box.dataset.marca) {
+        marcasMarcadas[box.dataset.marca] = box.checked;
+        aplicar();
+      }
+    });
+
+    caixaEstoque.addEventListener("change", aplicar);
+    caixaPromo.addEventListener("change", aplicar);
+    document.getElementById("ordenacao").addEventListener("change", aplicar);
+    document
+      .getElementById("limpar-filtros")
+      .addEventListener("click", function () {
+        caixaEstoque.checked = false;
+        caixaPromo.checked = false;
+        areaMarcas.querySelectorAll("input").forEach(function (b) {
+          b.checked = true;
+          marcasMarcadas[b.dataset.marca] = true;
+        });
+        aplicar();
+      });
+
+    document.getElementById("toggle-filtros").addEventListener("click", function () {
+      var p = document.getElementById("painel-filtros");
+      p.classList.toggle("aberto");
+    });
+
+    var busca = document.getElementById("busca-global");
+    if (busca) {
+      busca.addEventListener("input", aplicar);
+      busca.value = lerQuery("q");
+    }
+
+    var marcaPreselecionada = lerQuery("marca");
+    if (marcaPreselecionada) {
+      BANCO_DADOS.marcas.forEach(function (m) {
+        marcasMarcadas[m.slug] = m.slug === marcaPreselecionada;
+      });
+      areaMarcas.querySelectorAll("input").forEach(function (b) {
+        b.checked = b.dataset.marca === marcaPreselecionada;
+      });
+    }
+
+    function aplicar() {
+      var termo = (busca.value || "").trim().toLowerCase();
+      var lista = BANCO_DADOS.produtos.filter(function (p) {
+        if (caixaEstoque.checked && !produtoTemEstoque(p)) return false;
+        if (caixaPromo.checked && !p.precoPromo) return false;
+        if (!marcasMarcadas[p.marca]) return false;
+        if (termo) {
+          var alvo = p.nome + " " + p.marca + " " + p.categoria;
+          p.sabores.forEach(function (s) {
+            alvo += " " + s.nome;
+          });
+          var marcaNome = marcaPorSlug(p.marca);
+          if (marcaNome) alvo += " " + marcaNome.nome;
+          if (alvo.toLowerCase().indexOf(termo) === -1) return false;
+        }
+        return true;
+      });
+
+      var sort = document.getElementById("ordenacao").value;
+      if (sort === "menor") lista = lista.slice().sort(function (a, b) { return precoAtual(a) - precoAtual(b); });
+      if (sort === "maior") lista = lista.slice().sort(function (a, b) { return precoAtual(b) - precoAtual(a); });
+
+      renderizarCards(grid, lista, produtoCardHTML);
+      info.textContent = lista.length + (lista.length === 1 ? " produto" : " produtos") + (termo ? " para \"" + termo + "\"" : "");
+    }
+
+    aplicar();
+  </script>
+</body>
+</html>

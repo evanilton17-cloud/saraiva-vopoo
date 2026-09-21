@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sara Vape — Pods Premium, modelos e sabores</title>
+  <meta name="description" content="Pods premium, refis e essências. Escolha sua marca, veja os modelos, os sabores e os preços.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="cabecalho"></div>
+
+  <main id="conteudo">
+    <section class="hero">
+      <div class="container">
+        <span class="etiqueta">◆ Pods premium</span>
+        <h1>Escolha sua <em>marca</em></h1>
+        <p>Toque na marca para ver os modelos, os sabores e os preços de cada catálogo.</p>
+      </div>
+    </section>
+
+    <section class="container">
+      <div class="secao-titulo">
+        <h2>Escolha por marca</h2>
+        <a class="link-ver" href="catalogo.html">Ver todos os produtos →</a>
+      </div>
+      <div class="barra-filtro">
+        <div class="chips" id="filtro-categorias"></div>
+        <p class="contagem" id="contagem-catalogo"></p>
+      </div>
+      <div class="grid-marcas" id="grid-marcas"></div>
+    </section>
+
+    <section class="container">
+      <div class="secao-titulo">
+        <h2>Pods em destaque</h2>
+        <a class="link-ver" href="catalogo.html">Catálogo completo →</a>
+      </div>
+      <div class="grid-produtos" id="grid-galeria"></div>
+    </section>
+
+    <section class="container">
+      <div class="cta glass" style="margin:20px 0 40px;padding:40px 24px;text-align:center;border-radius:20px;">
+        <h2 style="font-size:clamp(22px,3.5vw,30px);font-weight:800;">Não sabe qual escolher?</h2>
+        <p style="color:var(--texto-2);margin:10px auto 22px;max-width:440px;">Manda uma mensagem que a gente te ajuda a decidir o melhor modelo para você.</p>
+        <a class="btn btn-whats" href="#" id="cta-whats" target="_blank" rel="noopener">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.4 5 5.1-1.3A10 10 0 1 0 12 2Z"/></svg>
+          Falar com a loja
+        </a>
+      </div>
+      <div class="aviso-idade" style="margin:0 0 40px;">
+        Venda restrita a maiores de 18 anos. Produtos de uso adulto. Consulte a legislação aplicável antes da compra.
+      </div>
+    </section>
+  </main>
+
+  <div id="rodape"></div>
+  <div id="wa-flutuante"></div>
+
+  <script src="js/dados.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/cart.js"></script>
+  <script>
+    montarPagina("marcas");
+
+    var cats = [];
+    BANCO_DADOS.marcas.forEach(function (m) {
+      if (cats.indexOf(m.categoria) === -1) cats.push(m.categoria);
+    });
+    cats.sort();
+
+    var chipsEl = document.getElementById("filtro-categorias");
+    chipsEl.innerHTML = ["Todos"]
+      .concat(cats)
+      .map(function (c) {
+        var key = c === "Todos" ? "all" : c;
+        var ativo = c === "Todos" ? " ativo" : "";
+        return '<button class="chip' + ativo + '" data-cat="' + key + '">' + c + "</button>";
+      })
+      .join("");
+
+    var catAtual = "all";
+    function montarGrade() {
+      var listaMarcas =
+        catAtual === "all"
+          ? BANCO_DADOS.marcas
+          : BANCO_DADOS.marcas.filter(function (m) {
+              return m.categoria === catAtual;
+            });
+      renderizarCards(document.getElementById("grid-marcas"), listaMarcas, marcaCardHTML);
+
+      var listaProds = BANCO_DADOS.produtos.filter(function (p) {
+        if (catAtual === "all") return true;
+        var m = marcaPorSlug(p.marca);
+        return m && m.categoria === catAtual;
+      });
+      renderizarCards(document.getElementById("grid-galeria"), listaProds, produtoCardHTML);
+
+      var prods = 0;
+      listaMarcas.forEach(function (m) {
+        prods += produtosDaMarca(m.slug).length;
+      });
+      document.getElementById("contagem-catalogo").textContent =
+        listaMarcas.length +
+        " marca" +
+        (listaMarcas.length === 1 ? "" : "s") +
+        " · " +
+        prods +
+        " produto" +
+        (prods === 1 ? "" : "s") +
+        " no catálogo";
+    }
+
+    chipsEl.addEventListener("click", function (e) {
+      var b = e.target;
+      if (b.dataset && b.dataset.cat) {
+        catAtual = b.dataset.cat;
+        chipsEl.querySelectorAll(".chip").forEach(function (c) {
+          c.classList.toggle("ativo", c === b);
+        });
+        montarGrade();
+      }
+    });
+
+    montarGrade();
+    document.getElementById("cta-whats").href = waLink();
+  </script>
+</body>
+</html>
