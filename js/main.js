@@ -299,23 +299,23 @@ function montarParallax() {
   var el = document.createElement("div");
   el.className = "fundo-parallax";
   el.innerHTML =
-    '<div class="fundo-foto"></div>' +
     '<div class="fundo-fumaca"></div>' +
     '<div class="fundo-mascara"></div>';
   document.body.insertBefore(el, document.body.firstChild);
 
-  var foto = el.querySelector(".fundo-foto");
   var fumaca = el.querySelector(".fundo-fumaca");
-  if (cfg.foto) foto.style.backgroundImage = 'url("' + cfg.foto + '")';
-  if (cfg.fumaca) fumaca.style.backgroundImage = 'url("' + cfg.fumaca + '")';
+  if (fumaca && cfg.fumaca) fumaca.style.backgroundImage = 'url("' + cfg.fumaca + '")';
+
+  var silhueta = document.querySelector(".v-silhueta");
+  if (silhueta && cfg.foto) silhueta.style.backgroundImage = 'url("' + cfg.foto + '")';
 
   var agendado = false;
   function atualizar() {
     agendado = false;
     var y = window.scrollY || window.pageYOffset || 0;
     var vel = cfg.velocidadeParallax || 0.06;
-    if (foto) foto.style.setProperty("--par", Math.round(-y * vel) + "px");
     if (fumaca) fumaca.style.setProperty("--par2", Math.round(-y * vel * 0.5) + "px");
+    if (silhueta) silhueta.style.setProperty("--parS", Math.round(-y * vel * 0.22) + "px");
   }
   window.addEventListener("scroll", function () {
     if (!agendado) {
