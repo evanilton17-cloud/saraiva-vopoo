@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Sara Vape — Pods Premium, modelos e sabores</title>
   <meta name="description" content="Pods premium, refis e essências. Escolha sua marca, veja os modelos, os sabores e os preços.">
+  <meta http-equiv="Cache-Control" content="no-store">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/style.css?v=3">
 </head>
 <body>
   <div id="cabecalho"></div>
@@ -17,9 +18,17 @@
     <section class="hero">
       <div class="container">
         <span class="etiqueta">◆ Pods premium</span>
-        <h1>Escolha sua <em>marca</em></h1>
-        <p>Toque na marca para ver os modelos, os sabores e os preços de cada catálogo.</p>
+        <h1>Pods em <em>destaque</em></h1>
+        <p>Os modelos com sabor, preço e estoque na frente. Toque em um produto para ver os sabores e adicionar ao pedido.</p>
       </div>
+    </section>
+
+    <section class="container">
+      <div class="barra-filtro" style="margin-bottom:18px;">
+        <div class="chips" id="filtro-categorias"></div>
+        <p class="contagem" id="contagem-catalogo"></p>
+      </div>
+      <div class="grid-produtos" id="grid-galeria"></div>
     </section>
 
     <section class="container">
@@ -27,19 +36,7 @@
         <h2>Escolha por marca</h2>
         <a class="link-ver" href="catalogo.html">Ver todos os produtos →</a>
       </div>
-      <div class="barra-filtro">
-        <div class="chips" id="filtro-categorias"></div>
-        <p class="contagem" id="contagem-catalogo"></p>
-      </div>
       <div class="grid-marcas" id="grid-marcas"></div>
-    </section>
-
-    <section class="container">
-      <div class="secao-titulo">
-        <h2>Pods em destaque</h2>
-        <a class="link-ver" href="catalogo.html">Catálogo completo →</a>
-      </div>
-      <div class="grid-produtos" id="grid-galeria"></div>
     </section>
 
     <section class="container">
@@ -60,9 +57,9 @@
   <div id="rodape"></div>
   <div id="wa-flutuante"></div>
 
-  <script src="js/dados.js"></script>
-  <script src="js/main.js"></script>
-  <script src="js/cart.js"></script>
+  <script src="js/dados.js?v=2"></script>
+  <script src="js/main.js?v=2"></script>
+  <script src="js/cart.js?v=2"></script>
   <script>
     montarPagina("marcas");
 

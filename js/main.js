@@ -1,9 +1,15 @@
 (function aplicarPainel() {
   try {
     var guardado = JSON.parse(localStorage.getItem("sv_painel") || "null");
-    if (guardado && typeof guardado === "object" && guardado.marcas) {
-      BANCO_DADOS = guardado;
+    if (!guardado || typeof guardado !== "object") return;
+    if (!Array.isArray(guardado.marcas) || !Array.isArray(guardado.produtos)) return;
+    for (var i = 0; i < guardado.produtos.length; i++) {
+      var p = guardado.produtos[i];
+      if (!p || !p.id || !p.slug || !Array.isArray(p.sabores)) return;
+      if (typeof p.cor1 !== "string") p.cor1 = "#22d3ee";
+      if (typeof p.cor2 !== "string") p.cor2 = "#0e7490";
     }
+    BANCO_DADOS = guardado;
   } catch (e) {}
 })();
 
