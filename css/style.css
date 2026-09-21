@@ -2064,30 +2064,31 @@ h3 {
 .v-bafo i {
   position: absolute;
   border-radius: 50%;
-  background: radial-gradient(circle, rgba(188, 214, 255, 0.5), rgba(188, 214, 255, 0) 70%);
+  background: radial-gradient(circle, rgba(205, 226, 255, 0.85), rgba(205, 226, 255, 0.35) 52%, rgba(205, 226, 255, 0) 72%);
   opacity: 0;
   animation: bafo 5.4s var(--ease-premium) infinite;
+  will-change: transform, opacity;
 }
 
 .v-bafo i:nth-child(1) {
-  width: 64px;
-  height: 64px;
+  width: 86px;
+  height: 86px;
   left: 34%;
   top: 52%;
   animation-delay: -0.2s;
 }
 
 .v-bafo i:nth-child(2) {
-  width: 84px;
-  height: 84px;
+  width: 108px;
+  height: 108px;
   left: 8%;
   top: 30%;
   animation-delay: -1.9s;
 }
 
 .v-bafo i:nth-child(3) {
-  width: 56px;
-  height: 56px;
+  width: 74px;
+  height: 74px;
   right: 0;
   top: 62%;
   animation-delay: -3.7s;
@@ -2096,26 +2097,30 @@ h3 {
 @keyframes bafo {
   0% {
     opacity: 0;
-    transform: translate(0, 8px) scale(0.55);
+    transform: translate(0, 8px) scale(0.5);
   }
-  16% {
-    opacity: 0.65;
+  18% {
+    opacity: 0.9;
   }
-  38% {
-    opacity: 0.45;
-    transform: translate(22px, -42px) scale(1.18);
+  40% {
+    opacity: 0.62;
+    transform: translate(22px, -46px) scale(1.2);
+    filter: blur(1px);
   }
-  62% {
-    opacity: 0.28;
-    transform: translate(48px, -104px) scale(1.55);
+  64% {
+    opacity: 0.38;
+    transform: translate(48px, -110px) scale(1.6);
+    filter: blur(3px);
   }
-  84% {
-    opacity: 0.1;
-    transform: translate(78px, -170px) scale(1.95);
+  86% {
+    opacity: 0.14;
+    transform: translate(76px, -178px) scale(2);
+    filter: blur(6px);
   }
   100% {
     opacity: 0;
-    transform: translate(102px, -232px) scale(2.3);
+    transform: translate(98px, -238px) scale(2.4);
+    filter: blur(8px);
   }
 }
 
