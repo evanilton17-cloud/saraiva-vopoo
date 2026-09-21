@@ -27,7 +27,7 @@ var BANCO_DADOS = {
       marca: "ignite",
       cor1: "#22d3ee",
       cor2: "#0e7490",
-      imagem: "img/brand-ignite.jpg",
+      imagem: "img/pod-ignite-v80.webp",
       preco: 125,
       precoPromo: null,
       puffs: null,
@@ -52,7 +52,7 @@ var BANCO_DADOS = {
       marca: "ignite",
       cor1: "#22d3ee",
       cor2: "#0e7490",
-      imagem: "img/brand-ignite.jpg",
+      imagem: "img/pod-ignite-v50.webp",
       preco: 125,
       precoPromo: null,
       puffs: null,
@@ -76,7 +76,7 @@ var BANCO_DADOS = {
       marca: "ignite",
       cor1: "#22d3ee",
       cor2: "#0e7490",
-      imagem: "img/brand-ignite.jpg",
+      imagem: "img/pod-ignite-v150.webp",
       preco: 135,
       precoPromo: null,
       puffs: null,
@@ -266,6 +266,86 @@ var BANCO_DADOS = {
         { nome: "Uva Ice", estoque: true },
         { nome: "Mango", estoque: true },
         { nome: "Mint", estoque: true }
+      ]
+    },
+    {
+      id: "p-ignite-v250",
+      slug: "ignite-v250",
+      nome: "Ignite V250",
+      marca: "ignite",
+      cor1: "#22d3ee",
+      cor2: "#0e7490",
+      imagem: "img/pod-ignite-v250.png",
+      preco: 155,
+      precoPromo: null,
+      puffs: 25000,
+      novidade: true,
+      estoque: true,
+      specs: [
+        ["Tipo", "Pods descartáveis"],
+        ["Puffs", "25.000"],
+        ["Bateria", "650 mAh · USB-C"],
+        ["Venda", "18+"]
+      ],
+      sabores: [
+        { nome: "Blueberry Ice", estoque: true },
+        { nome: "Uva Ice", estoque: true },
+        { nome: "Menta", estoque: true },
+        { nome: "Melancia", estoque: true }
+      ]
+    },
+    {
+      id: "p-ignite-v300",
+      slug: "ignite-v300",
+      nome: "Ignite V300",
+      marca: "ignite",
+      cor1: "#22d3ee",
+      cor2: "#0e7490",
+      imagem: "img/pod-ignite-v300.jpg",
+      preco: 170,
+      precoPromo: null,
+      puffs: 30000,
+      novidade: true,
+      estoque: true,
+      specs: [
+        ["Tipo", "Pods descartáveis"],
+        ["Puffs", "30.000"],
+        ["Bateria", "800 mAh · USB-C"],
+        ["Venda", "18+"]
+      ],
+      sabores: [
+        { nome: "Melancia Ice", estoque: true },
+        { nome: "Morango Kiwi", estoque: true },
+        { nome: "Uva", estoque: true },
+        { nome: "Manga", estoque: true },
+        { nome: "Icy Mint", estoque: true }
+      ]
+    },
+    {
+      id: "p-ignite-v400",
+      slug: "ignite-v400",
+      nome: "Ignite V400 Ice",
+      marca: "ignite",
+      cor1: "#22d3ee",
+      cor2: "#0e7490",
+      imagem: "img/pod-ignite-v400.png",
+      preco: 185,
+      precoPromo: null,
+      puffs: 40000,
+      novidade: true,
+      estoque: true,
+      specs: [
+        ["Tipo", "Pods descartáveis"],
+        ["Puffs", "40.000"],
+        ["Bateria", "800 mAh · USB-C"],
+        ["Tela", "Smart"],
+        ["Venda", "18+"]
+      ],
+      sabores: [
+        { nome: "Blue Razz", estoque: true },
+        { nome: "Menta Gelada", estoque: true },
+        { nome: "Melancia", estoque: true },
+        { nome: "Blueberry Ice", estoque: true }
       ]
     }
   ]
