@@ -1,6 +1,14 @@
 var CARRINHO_CHAVE = "sv_carrinho";
 var carrinho = [];
 
+function escapeAttr(v) {
+  return String(v || "")
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
 function carregarCarrinho() {
   try {
     carrinho = JSON.parse(localStorage.getItem(CARRINHO_CHAVE)) || [];
@@ -112,17 +120,31 @@ function fecharCarrinho() {
 }
 
 function montarTextoPedido() {
-  var linhas = carrinho.map(function (item) {
-    return (
-      "• " + item.nome + " — " + item.sabor + " — " + item.qtd + "x — " + formatarPreco(item.qtd * item.preco)
-    );
-  });
+  var todo = carrinho
+    .map(function (item) {
+      return (
+        "• " + item.nome + " — " + item.sabor + " — " + item.qtd + "x — " + formatarPreco(item.qtd * item.preco)
+      );
+    })
+    .join("\n");
+  var campos = campoEntrega();
   var texto =
     "Olá! 👋 Quero finalizar meu pedido:\n" +
-    linhas.join("\n") +
+    (campos.nome ? "Nome: " + campos.nome + "\n" : "") +
+    todo +
     "\n\nTotal: " +
-    formatarPreco(totalPreco());
+    formatarPreco(totalPreco()) +
+    (campos.entrega ? "\nEntrega: " + campos.entrega : "");
   return texto;
+}
+
+function campoEntrega() {
+  var nomeEl = document.getElementById("cliente-nome");
+  var entregaEl = document.getElementById("cliente-entrega");
+  return {
+    nome: (nomeEl && nomeEl.value.trim()) || "",
+    entrega: entregaEl ? entregaEl.value : ""
+  };
 }
 
 function celulaItem(item) {
@@ -180,8 +202,19 @@ function renderizarCarrinho() {
     return;
   }
 
+  var cliente = campoEntrega();
   itens.innerHTML = carrinho.map(celulaItem).join("");
   rodape.innerHTML =
+    '<div class="campo"><label for="cliente-nome">Seu nome</label>' +
+    '<input type="text" id="cliente-nome" placeholder="Como podemos te chamar?" maxlength="60" value="' +
+    escapeAttr(cliente.nome) +
+    '"></div>' +
+    '<div class="campo"><label for="cliente-entrega">Forma de retirada</label>' +
+    '<select id="cliente-entrega"><option value="Retirar na loja"' +
+    (cliente.entrega === "Retirar na loja" ? " selected" : "") +
+    ">Retirar na loja</option><option value=\"Entrega (combinar taxa)\"" +
+    (cliente.entrega === "Entrega (combinar taxa)" ? " selected" : "") +
+    ">Entrega (combinar taxa)</option></select></div>" +
     '<div class="total-linha"><span>Total</span><strong>' +
     formatarPreco(totalPreco()) +
     "</strong></div>" +
@@ -230,6 +263,13 @@ function initCarrinho() {
       return;
     }
     if (el.id === "carrinho-chekout") {
+      var cliente = campoEntrega();
+      if (!cliente.nome) {
+        var nomeEl = document.getElementById("cliente-nome");
+        if (nomeEl) nomeEl.focus();
+        mostrarToast("<b>Falta seu nome</b><br>Preencha para finalizar o pedido.");
+        return;
+      }
       window.open(waLink(montarTextoPedido()), "_blank");
     }
   });

@@ -278,7 +278,7 @@ function RODAPE_HTML() {
     '<p>© <span id="ano"></span> ' +
     (BANCO_DADOS.nomeMarca || "SARAIVA VAPOR") +
     ". Todos os direitos reservados.</p>" +
-    '<p class="aviso">Venda proibida para menores de 18 anos.</p>' +
+    '<p class="aviso">Venda proibida para menores de 18 anos. Contém nicotina, substância que causa dependência. Produtos de uso adulto.</p>' +
     '<a class="painel-link" href="painel.html">Painel</a>' +
     "</div>" +
     "</div></footer>"

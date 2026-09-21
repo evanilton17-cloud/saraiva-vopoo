@@ -5,10 +5,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Saraiva Vapor — Produto</title>
   <meta name="description" content="Detalhes do produto, sabores e preço.">
+  <meta name="theme-color" content="#08090b">
+  <meta name="robots" content="index, follow">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="canonical" href="https://saraiva-vopoo.vercel.app/produto.html">
+  <meta property="og:type" content="product">
+  <meta property="og:site_name" content="Saraiva Vapor">
+  <meta property="og:title" content="Produto — Saraiva Vapor">
+  <meta property="og:description" content="Veja detalhes, sabores e preço do produto.">
+  <meta property="og:image" content="https://saraiva-vopoo.vercel.app/img/pag1.png">
+  <meta property="og:url" content="https://saraiva-vopoo.vercel.app/produto.html">
+  <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=4">
+  <link rel="stylesheet" href="css/style.css?v=5">
 </head>
 <body>
   <div id="cabecalho"></div>
@@ -39,9 +50,9 @@
   <div id="rodape"></div>
   <div id="wa-flutuante"></div>
 
-  <script src="js/dados.js?v=2"></script>
-  <script src="js/main.js?v=3"></script>
-  <script src="js/cart.js?v=2"></script>
+  <script src="js/dados.js?v=3"></script>
+  <script src="js/main.js?v=4"></script>
+  <script src="js/cart.js?v=3"></script>
   <script>
     montarPagina("pods");
 
@@ -58,6 +69,17 @@
     function montarProduto(prod) {
       var marca = marcaPorSlug(prod.marca);
       document.title = prod.nome + " — Saraiva Vapor";
+
+      function setMeta(sel, content) {
+        var el = document.querySelector(sel);
+        if (el && content) el.setAttribute("content", content);
+      }
+      var imgAbs = (prod.imagem || (marca && marca.imagem) || "img/pag1.png").replace(/^\.?\//, "");
+      setMeta('meta[property="og:title"]', prod.nome + " — Saraiva Vapor");
+      setMeta('meta[name="description"]', "Confira o " + prod.nome + " da Saraiva Vapor: sabores, puffs e preço. Venda proibida para menores de 18 anos.");
+      setMeta('meta[property="og:description"]', "Confira o " + prod.nome + " da Saraiva Vapor: sabores, puffs e preço.");
+      setMeta('meta[property="og:image"]', "https://saraiva-vopoo.vercel.app/" + imgAbs);
+      setMeta('meta[property="og:url"]', "https://saraiva-vopoo.vercel.app/produto.html?produto=" + encodeURIComponent(prod.slug));
 
       document.getElementById("zoom-grad").innerHTML = "";
       document.getElementById("zoom-grad").style.background = "";
@@ -120,6 +142,9 @@
         '<span class="stepper"><button id="qtd-menos" ' + (emEstoque ? "" : "disabled") + '>−</button><span class="qtd-valor" id="qtd-valor">1</span><button id="qtd-mais" ' + (emEstoque ? "" : "disabled") + '>+</button></span></div>' +
         '<button class="btn btn-primario" id="btn-adicionar" ' + (emEstoque ? "" : "disabled") + '>' +
         (emEstoque ? "Adicionar ao pedido" : "Produto esgotado") +
+        "</button>" +
+        '<button class="btn btn-whats" id="btn-comprar-now" ' + (emEstoque ? "" : "disabled") + '>' +
+        "Comprar direto no WhatsApp" +
         "</button>";
 
       atualizarPreco(prod, null);
@@ -158,6 +183,26 @@
         adicionarAoCarrinho(prod.id, saborEscolhido.nome, qtd);
         abrirCarrinho();
       });
+
+      var btnNow = document.getElementById("btn-comprar-now");
+      if (btnNow) {
+        btnNow.addEventListener("click", function () {
+          if (!emEstoque || !saborEscolhido) return;
+          var total = qtd * precoAtual(prod);
+          var msg =
+            "Olá! 👋 Quero comprar:\n• " +
+            prod.nome +
+            " — " +
+            saborEscolhido.nome +
+            " — " +
+            qtd +
+            "x — " +
+            formatarPreco(total) +
+            "\n\nTotal: " +
+            formatarPreco(total);
+          window.open(waLink(msg), "_blank");
+        });
+      }
 
       painel.addEventListener("click", function (e) {
         var alvo = e.target;
