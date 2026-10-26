@@ -683,6 +683,7 @@ function renderConfig() {
     '<div class="a-field"><label>Nome do site</label><input class="a-input" id="c-nome" value="' + escAttr(estado.nomeSite || "") + '"></div>' +
     '<div class="a-field"><label>Nome da marca (logo)</label><input class="a-input" id="c-marca" value="' + escAttr(estado.nomeMarca || "") + '"></div>' +
     "</div>" +
+    '<div class="a-field"><label>Senha do painel</label><input class="a-input" id="c-senha" type="password" value="' + escAttr(estado.senha || "") + '" placeholder="Deixe em branco para manter a atual"></div>' +
     '<div class="a-field"><label>Frase de apoio (tagline)</label><input class="a-input" id="c-tagline" value="' + escAttr(estado.tagline || "") + '"></div>' +
     '<div class="a-field"><label>Link de contato (opcional, sem WhatsApp)</label><input class="a-input" id="c-contato" value="' + escAttr(estado.contato || "") + '"></div>' +
     '<div class="a-field"><label>Como os pedidos chegam até você</label>' +
@@ -696,7 +697,7 @@ function renderConfig() {
     "</div></div>" +
     '<p style="font-size:12.5px;color:var(--a-muted-2);margin:12px 0 0;">Salvas automaticamente enquanto você digita.</p>';
 
-  ["c-nome", "c-marca", "c-tagline", "c-contato"].forEach(function (id) {
+  ["c-nome", "c-marca", "c-tagline", "c-contato", "c-senha"].forEach(function (id) {
     get(id).addEventListener("input", autosaveConfig);
   });
   ["c-fumaca", "c-spotlight", "c-parallax"].forEach(function (id) {
@@ -709,6 +710,11 @@ function autosaveConfig() {
   estado.nomeMarca = get("c-marca").value.trim() || "SARAIVA";
   estado.tagline = get("c-tagline").value.trim() || "";
   estado.contato = get("c-contato").value.trim();
+  var novaSenha = get("c-senha").value.trim();
+  if (novaSenha) {
+    estado.senha = novaSenha;
+    localStorage.setItem(CHAVE_SENHA, novaSenha);
+  }
   estado.efeitos = {
     fumaca: get("c-fumaca").checked,
     spotlight: get("c-spotlight").checked,
@@ -762,7 +768,7 @@ function importarJSON(arquivo) {
 
 /* ---------- Login ---------- */
 function senhaAtual() {
-  return localStorage.getItem(CHAVE_SENHA) || SENHA_PADRAO;
+  return (estado && estado.senha) || localStorage.getItem(CHAVE_SENHA) || SENHA_PADRAO;
 }
 
 function mostrarAuth() {
