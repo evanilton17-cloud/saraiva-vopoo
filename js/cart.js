@@ -1,5 +1,17 @@
 var CARRINHO_CHAVE = "sv_carrinho";
+var LOJA_TOKEN = "sv8e4ac97ff788574ee6633547";
 var carrinho = [];
+
+function enviarVendaServidor(venda) {
+  try {
+    fetch("api/venda", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-loja-token": LOJA_TOKEN },
+      body: JSON.stringify({ venda: venda }),
+      keepalive: true
+    }).catch(function () {});
+  } catch (e) {}
+}
 
 function escapeAttr(v) {
   return String(v || "")
@@ -11,7 +23,7 @@ function escapeAttr(v) {
 
 function carregarCarrinho() {
   try {
-    carrinho = JSON.parse(localStorage.getItem(CARRINHO_CHAVE)) || [];
+    carrinho = JSON.parse(sessionStorage.getItem(CARRINHO_CHAVE)) || [];
   } catch (e) {
     carrinho = [];
   }
@@ -19,7 +31,7 @@ function carregarCarrinho() {
 
 function salvarCarrinho() {
   try {
-    localStorage.setItem(CARRINHO_CHAVE, JSON.stringify(carrinho));
+    sessionStorage.setItem(CARRINHO_CHAVE, JSON.stringify(carrinho));
   } catch (e) {}
   atualizarBadge();
 }
@@ -119,7 +131,16 @@ function fecharCarrinho() {
   document.body.style.overflow = "";
 }
 
+var cupomCorrente = null;
+var pagamentoCorrente = "";
+
+function codigoPedido() {
+  var d = new Date();
+  return "SV" + String(d.getDate()).padStart(2, "0") + String(d.getMonth() + 1).padStart(2, "0") + "-" + Math.floor(100 + Math.random() * 900);
+}
+
 function montarTextoPedido() {
+  if (!cupomCorrente) cupomCorrente = codigoPedido();
   var todo = carrinho
     .map(function (item) {
       return (
@@ -130,11 +151,13 @@ function montarTextoPedido() {
   var campos = campoEntrega();
   var texto =
     "Olá! 👋 Quero finalizar meu pedido:\n" +
+    "Pedido: " + cupomCorrente + "\n" +
     (campos.nome ? "Nome: " + campos.nome + "\n" : "") +
     todo +
     "\n\nTotal: " +
     formatarPreco(totalPreco()) +
-    (campos.entrega ? "\nEntrega: " + campos.entrega : "");
+    (campos.entrega ? "\nEntrega: " + campos.entrega : "") +
+    (pagamentoCorrente ? "\nPagamento: " + pagamentoCorrente : "");
   return texto;
 }
 
@@ -198,7 +221,7 @@ function renderizarCarrinho() {
       '<div class="total-linha"><span>Total</span><strong>' +
       formatarPreco(0) +
       "</strong></div>" +
-      '<button class="btn btn-whats" id="carrinho-chekout" disabled>Finalizar no WhatsApp</button>';
+      '<button class="btn btn-primario" id="carrinho-chekout" disabled>Finalizar pedido</button>';
     return;
   }
 
@@ -209,16 +232,144 @@ function renderizarCarrinho() {
     '<input type="text" id="cliente-nome" placeholder="Como podemos te chamar?" maxlength="60" value="' +
     escapeAttr(cliente.nome) +
     '"></div>' +
-    '<div class="campo"><label for="cliente-entrega">Forma de retirada</label>' +
-    '<select id="cliente-entrega"><option value="Retirar na loja"' +
-    (cliente.entrega === "Retirar na loja" ? " selected" : "") +
-    ">Retirar na loja</option><option value=\"Entrega (combinar taxa)\"" +
+    '<div class="campo"><label for="cliente-entrega">Entrega</label>' +
+    '<select id="cliente-entrega"><option value="Entrega (combinar taxa)"' +
     (cliente.entrega === "Entrega (combinar taxa)" ? " selected" : "") +
     ">Entrega (combinar taxa)</option></select></div>" +
     '<div class="total-linha"><span>Total</span><strong>' +
     formatarPreco(totalPreco()) +
     "</strong></div>" +
-    '<button class="btn btn-whats" id="carrinho-chekout">Finalizar pedido no WhatsApp</button>';
+    '<button class="btn btn-primario" id="carrinho-chekout">Finalizar pedido</button>';
+}
+
+function copiarCupom() {
+  if (!pagamentoCorrente) {
+    mostrarToast("<b>Escolha a forma de pagamento</b><br>Dinheiro, cartão ou Pix.");
+    return;
+  }
+  var ta = document.getElementById("cupom-texto");
+  if (!ta) return;
+  var feito = false;
+  try {
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(ta.value);
+      feito = true;
+    }
+  } catch (e) {}
+  if (!feito) {
+    ta.focus();
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    try {
+      document.execCommand("copy");
+      feito = true;
+    } catch (e) {}
+  }
+  if (feito) {
+    var registrada = registrarVendaAuto();
+    if (registrada) limparCarrinho();
+    mostrarToast(
+      registrada
+        ? "<b>Cupom copiado ✓</b><br>Pedido registrado na loja."
+        : "<b>Cupom copiado ✓</b><br>Cole na conversa da loja para confirmar."
+    );
+  }
+}
+
+function registrarVendaAuto() {
+  if (!cupomCorrente || !carrinho.length || !pagamentoCorrente) return false;
+  var agora = new Date();
+  var campos = campoEntrega();
+  var v = {
+    id: "v-" + agora.getTime().toString(36) + "-" + Math.floor(Math.random() * 9999).toString(36),
+    data: agora.getFullYear() + "-" + String(agora.getMonth() + 1).padStart(2, "0") + "-" + String(agora.getDate()).padStart(2, "0"),
+    hora: agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }),
+    ncupom: cupomCorrente,
+    cliente: campos.nome,
+    itens: carrinho.map(function (it) {
+      return { nome: it.nome, sabor: it.sabor, qtd: it.qtd, valor: it.preco };
+    }),
+    total: totalPreco(),
+    pagamento: pagamentoCorrente,
+    entrega: campos.entrega
+  };
+  var vendas = [];
+  try {
+    vendas = JSON.parse(localStorage.getItem("sv_vendas")) || [];
+  } catch (e) {
+    vendas = [];
+  }
+  if (!Array.isArray(vendas)) vendas = [];
+  if (vendas.some(function (x) { return x.ncupom && x.ncupom === v.ncupom; })) return false;
+  vendas.push(v);
+  try {
+    localStorage.setItem("sv_vendas", JSON.stringify(vendas));
+  } catch (e) {
+    return false;
+  }
+  enviarVendaServidor(v);
+  return true;
+}
+
+function limparCarrinho() {
+  cupomCorrente = null;
+  pagamentoCorrente = "";
+  carrinho = [];
+  salvarCarrinho();
+}
+
+function escolherPagamento(pg) {
+  pagamentoCorrente = pg;
+  document.querySelectorAll(".pagto-btn").forEach(function (b) {
+    b.classList.toggle("sel", b.dataset.pag === pg);
+  });
+  atualizarTextoCupom();
+}
+
+function atualizarTextoCupom() {
+  var ta = document.getElementById("cupom-texto");
+  if (ta) ta.value = montarTextoPedido();
+}
+
+function mostrarCupom() {
+  var itens = document.getElementById("carrinho-itens");
+  var rodape = document.getElementById("carrinho-rodape");
+  var cupom = document.getElementById("carrinho-cupom");
+  var titulo = document.querySelector("#carrinho-drawer .cab h3");
+  if (!cupom) return;
+  montarTextoPedido();
+  if (itens) itens.style.display = "none";
+  if (rodape) rodape.style.display = "none";
+  cupom.hidden = false;
+  cupom.innerHTML =
+    '<div class="cupom-num">' + cupomCorrente + "</div>" +
+    '<div class="cupom-pagto"><span class="cupom-pagto-label">Como vai pagar?</span>' +
+    '<div class="pagto-opcoes">' +
+    '<button class="pagto-btn" data-pag="Dinheiro" type="button">Dinheiro</button>' +
+    '<button class="pagto-btn" data-pag="Cartão" type="button">Cartão</button>' +
+    '<button class="pagto-btn" data-pag="Pix" type="button">Pix</button>' +
+    "</div></div>" +
+    '<div class="cupom-box" id="cupom-box" title="Clique para copiar">' +
+    '<textarea id="cupom-texto" readonly spellcheck="false">' + escapeAttr(montarTextoPedido()) + "</textarea>" +
+    "</div>" +
+    '<p class="cupom-dica">Toque no cupom para copiar.</p>' +
+    '<button class="btn btn-primario" id="cupom-copiar">Copiar cupom</button>' +
+    '<button class="btn" id="voltar-carrinho">← Voltar ao pedido</button>';
+  if (titulo) titulo.textContent = "Seu cupom de pedido";
+}
+
+function voltarAoCarrinho() {
+  cupomCorrente = null;
+  pagamentoCorrente = "";
+  var itens = document.getElementById("carrinho-itens");
+  var rodape = document.getElementById("carrinho-rodape");
+  var cupom = document.getElementById("carrinho-cupom");
+  var titulo = document.querySelector("#carrinho-drawer .cab h3");
+  if (cupom) cupom.hidden = true;
+  if (itens) itens.style.display = "";
+  if (rodape) rodape.style.display = "";
+  if (titulo) titulo.textContent = "Seu pedido";
+  renderizarCarrinho();
 }
 
 function initCarrinho() {
@@ -235,7 +386,8 @@ function initCarrinho() {
   drawer.innerHTML =
     '<div class="cab"><h3>Seu pedido</h3><button class="fechar-btn" id="fechar-carrinho" aria-label="Fechar">✕</button></div>' +
     '<div class="carrinho-itens" id="carrinho-itens"></div>' +
-    '<div class="carrinho-rodape" id="carrinho-rodape"></div>';
+    '<div class="carrinho-rodape" id="carrinho-rodape"></div>' +
+    '<div class="carrinho-cupom" id="carrinho-cupom" hidden></div>';
   document.body.appendChild(drawer);
 
   document.getElementById("abrir-carrinho").addEventListener("click", function () {
@@ -270,7 +422,20 @@ function initCarrinho() {
         mostrarToast("<b>Falta seu nome</b><br>Preencha para finalizar o pedido.");
         return;
       }
-      window.open(waLink(montarTextoPedido()), "_blank");
+      mostrarCupom();
+      return;
+    }
+    if (el.dataset && el.dataset.pag) {
+      escolherPagamento(el.dataset.pag);
+      return;
+    }
+    if (el.id === "cupom-copiar" || el.id === "cupom-box") {
+      copiarCupom();
+      return;
+    }
+    if (el.id === "voltar-carrinho") {
+      voltarAoCarrinho();
+      return;
     }
   });
 

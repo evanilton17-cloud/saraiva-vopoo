@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — Saraiva</title>
+  <meta name="robots" content="noindex, nofollow">
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Sora:wght@600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+  <link rel="stylesheet" href="css/painel.css">
+</head>
+<body class="admin">
+
+  <!-- ===== Tela de acesso ===== -->
+  <div class="a-auth" id="auth-root">
+    <div class="a-auth-card">
+      <div class="a-brand">
+        <div class="a-logo">SV</div>
+        <div>
+          <div class="a-brand-name">Saraiva</div>
+          <div class="a-brand-sub">Painel de administração</div>
+        </div>
+      </div>
+      <h1>Bem-vindo de volta</h1>
+      <p class="sub">Acesse com a senha do painel para gerenciar sua loja.</p>
+      <div class="a-err-box" id="auth-err">Senha incorreta. Tente novamente.</div>
+      <form id="auth-form">
+        <div class="a-field">
+          <label for="auth-senha">Senha</label>
+          <input type="password" class="a-input" id="auth-senha" placeholder="Digite a senha" autocomplete="current-password">
+        </div>
+        <button class="a-btn block" type="submit">Entrar no painel</button>
+      </form>
+      <p class="a-hint">Senha padrão: <code>admin</code></p>
+    </div>
+  </div>
+
+  <!-- ===== Aplicativo ===== -->
+  <div class="a-layout" id="app" style="display:none;">
+
+    <aside class="a-side">
+      <div class="a-brand">
+        <div class="a-logo">SV</div>
+        <div>
+          <div class="a-brand-name">Saraiva</div>
+          <div class="a-brand-sub">Admin Studio</div>
+        </div>
+      </div>
+
+      <nav class="a-nav">
+        <div class="a-nav-label">Menu</div>
+        <div class="a-nav-item" data-view="dashboard">
+          <span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/></svg></span>
+          Visão geral
+        </div>
+        <div class="a-nav-item" data-view="vendas">
+          <span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 3v18h18"/><path d="m7 15 4-4 4 3 5-6"/><path d="M17 6h2v2"/></svg></span>
+          Vendas<span class="cnt" id="nav-cnt-vendas">0</span>
+        </div>
+        <div class="a-nav-item" data-view="produtos">
+          <span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg></span>
+          Produtos<span class="cnt" id="nav-cnt-produtos">0</span>
+        </div>
+        <div class="a-nav-item" data-view="marcas">
+          <span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 13.41 20.6a2 2 0 0 1-2.82 0L3 13V3h10l7.59 7.59a2 2 0 0 1 0 2.82Z"/><circle cx="7.5" cy="7.5" r="1"/></svg></span>
+          Marcas<span class="cnt" id="nav-cnt-marcas">0</span>
+        </div>
+        <div class="a-nav-item" data-view="config">
+          <span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></svg></span>
+          Configurações
+        </div>
+        <div class="a-nav-item" data-view="backup">
+          <span class="ico"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 14.9A7 7 0 1 1 15.7 8h1.8a4.5 4.5 0 0 1 2.5 8.2"/><path d="M12 12v9"/><path d="m8 16 4-4 4 4"/></svg></span>
+          Publicar
+        </div>
+      </nav>
+
+      <div class="a-side-foot">
+        <a class="a-link-store" href="index.html" target="_blank" rel="noopener">Abrir loja em nova aba</a>
+        <div class="a-user">
+          <div class="a-avatar">AD</div>
+          <div class="a-user-info">
+            <div class="u-name">Administrador</div>
+            <div class="u-email">Local · offline</div>
+          </div>
+          <button class="a-logout" id="btn-sair-lateral" type="button" title="Sair do painel">Sair</button>
+        </div>
+      </div>
+    </aside>
+
+    <main class="a-main">
+      <header class="a-top">
+        <div>
+          <div class="a-title" id="top-titulo">Visão geral</div>
+          <div class="a-sub" id="top-sub">Resumo da sua loja virtual</div>
+        </div>
+        <div class="a-top-actions">
+          <span class="a-pill ok" id="top-status">Salvo</span>
+          <a class="a-btn ghost sm" href="index.html" target="_blank" rel="noopener">Ver loja</a>
+        </div>
+      </header>
+
+      <!-- ===== Visão geral ===== -->
+      <div class="a-view esta" id="view-dashboard">
+        <div class="a-grid c4">
+          <div class="a-metric">
+            <div class="m-ico ico-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="M3.3 7 12 12l8.7-5"/><path d="M12 22V12"/></svg></div>
+            <div class="m-val" id="m-produtos">0</div>
+            <div class="m-lab">Produtos no catálogo</div>
+            <span class="m-tag tag-blue" id="tag-produtos">total</span>
+          </div>
+          <div class="a-metric">
+            <div class="m-ico ico-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41 13.41 20.6a2 2 0 0 1-2.82 0L3 13V3h10l7.59 7.59a2 2 0 0 1 0 2.82Z"/><circle cx="7.5" cy="7.5" r="1"/></svg></div>
+            <div class="m-val" id="m-marcas">0</div>
+            <div class="m-lab">Marcas cadastradas</div>
+            <span class="m-tag tag-purple" id="tag-marcas">catálogo</span>
+          </div>
+          <div class="a-metric">
+            <div class="m-ico ico-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.4S12 4 12 4s-4 4.9-4 8a7 7 0 0 0 4 10Z"/></svg></div>
+            <div class="m-val" id="m-sabores">0</div>
+            <div class="m-lab">Sabores cadastrados</div>
+            <span class="m-tag tag-green" id="tag-sabores">variedade</span>
+          </div>
+          <div class="a-metric">
+            <div class="m-ico ico-orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="m8 12 3 3 5-6"/></svg></div>
+            <div class="m-val" id="m-estoque">0</div>
+            <div class="m-lab">Produtos em estoque</div>
+            <span class="m-tag tag-orange" id="tag-estoque">disponível</span>
+          </div>
+          <div class="a-metric">
+            <div class="m-ico ico-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 3 1.9 5.6L19.5 10l-5.6 1.9L12 17.5l-1.9-5.6L4.5 10l5.6-1.4Z"/></svg></div>
+            <div class="m-val" id="m-novo">0</div>
+            <div class="m-lab">Destaques como NOVO</div>
+            <span class="m-tag tag-purple" id="tag-novo">lançamentos</span>
+          </div>
+          <div class="a-metric">
+            <div class="m-ico ico-red"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 5 5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></svg></div>
+            <div class="m-val" id="m-promo">0</div>
+            <div class="m-lab">Produtos em promoção</div>
+            <span class="m-tag tag-red" id="tag-promo">ofertas</span>
+          </div>
+        </div>
+
+        <div class="a-aviso" id="dash-aviso">As alterações deste painel são salvas neste navegador e <strong>sincronizadas automaticamente</strong> na nuvem — o site público atualiza sozinho para todos os visitantes. Use a opção <strong>Publicar</strong> apenas para gerar uma cópia de segurança do arquivo <strong>dados.js</strong>.</div>
+
+        <div class="a-grid c2">
+          <div class="a-card">
+            <div class="a-card-head"><h3>Esgotados</h3><button class="a-btn sm ghost" id="dash-ver-esgotados" type="button">Ver no catálogo</button></div>
+            <div class="a-list" id="lista-esgotados"></div>
+          </div>
+          <div class="a-card">
+            <div class="a-card-head"><h3>Em promoção</h3><button class="a-btn sm ghost" id="dash-ver-promos" type="button">Ver no catálogo</button></div>
+            <div class="a-list" id="lista-promos"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Vendas ===== -->
+      <div class="a-view" id="view-vendas">
+        <div class="a-vendas-top">
+          <div class="v-chips" id="v-chips">
+            <button class="v-chip sel" data-f="mes" type="button">Este mês</button>
+            <button class="v-chip" data-f="30" type="button">Últimos 30 dias</button>
+            <button class="v-chip" data-f="tudo" type="button">Tudo</button>
+          </div>
+          <button class="a-btn" id="btn-registrar-venda" type="button">+ Registrar venda (colar cupom)</button>
+        </div>
+
+        <div class="a-grid c4">
+          <div class="a-metric">
+            <div class="m-ico ico-green"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div>
+            <div class="m-val" id="v-faturamento">R$ 0</div>
+            <div class="m-lab">Faturamento no período</div>
+            <span class="m-tag tag-green" id="v-tag-faturamento">este mês</span>
+          </div>
+          <div class="a-metric">
+            <div class="m-ico ico-blue"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg></div>
+            <div class="m-val" id="v-pedidos">0</div>
+            <div class="m-lab">Pedidos fechados</div>
+            <span class="m-tag tag-blue" id="v-tag-pedidos">pedidos</span>
+          </div>
+          <div class="a-metric">
+            <div class="m-ico ico-purple"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 20 20 4"/><circle cx="6.5" cy="10.5" r="2.5"/><circle cx="17.5" cy="16.5" r="2.5"/><path d="m14 14 2 2"/></svg></div>
+            <div class="m-val" id="v-ticket">R$ 0</div>
+            <div class="m-lab">Ticket médio por pedido</div>
+            <span class="m-tag tag-purple" id="v-tag-ticket">médio</span>
+          </div>
+          <div class="a-metric">
+            <div class="m-ico ico-orange"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6h12v12H6z"/><path d="M9 9h6v6H9z"/><path d="M9 3v3M15 3v3M9 18v3M15 18v3M3 9h3M3 15h3M18 9h3M18 15h3"/></svg></div>
+            <div class="m-val" id="v-qtd">0</div>
+            <div class="m-lab">Itens vendidos</div>
+            <span class="m-tag tag-orange" id="v-tag-qtd">unidades</span>
+          </div>
+        </div>
+
+        <div class="a-grid c2">
+          <div class="a-card">
+            <div class="a-card-head"><h3>Faturamento por mês</h3><span class="a-sub">últimos 6 meses</span></div>
+            <div class="v-bars" id="v-bars"></div>
+          </div>
+          <div class="a-card">
+            <div class="a-card-head"><h3>Meio de pagamento</h3><span class="a-sub">no período</span></div>
+            <div class="v-donut-wrap" id="v-donut"></div>
+          </div>
+        </div>
+
+        <div class="a-grid c2">
+          <div class="a-card">
+            <div class="a-card-head"><h3>O que saiu × o que não saiu</h3></div>
+            <div id="v-divbar"></div>
+            <div class="v-duplista">
+              <div><h4 class="v-tt verde">Saiu — já tem venda</h4><div class="a-list" id="v-saiu"></div></div>
+              <div><h4 class="v-tt verm">Não saiu — sem venda</h4><div class="a-list" id="v-nao-saiu"></div></div>
+            </div>
+          </div>
+          <div class="a-card">
+            <div class="a-card-head"><h3>Top produtos</h3><span class="a-sub">do período</span></div>
+            <div class="v-top" id="v-top"></div>
+          </div>
+        </div>
+
+        <div class="a-card">
+          <div class="a-card-head"><h3>Pedidos registrados</h3><button class="a-btn sm danger ghost" id="v-limpar" type="button">Limpar tudo</button></div>
+          <div class="a-table-wrap">
+            <table class="a-table">
+              <thead>
+                <tr><th>Data</th><th>Cupom / Cliente</th><th>Itens vendidos</th><th>Pagamento</th><th>Total</th><th></th></tr>
+              </thead>
+              <tbody id="v-corpo"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Produtos ===== -->
+      <div class="a-view" id="view-produtos">
+        <div class="a-search-row">
+          <input class="a-input grow" id="busca-produto" type="search" placeholder="Buscar por nome, marca ou sabor...">
+          <select class="a-select" id="filtro-marca"></select>
+          <select class="a-select" id="ordem-produtos">
+            <option value="nome">Ordenar: nome</option>
+            <option value="precoAsc">Ordenar: preço (menor)</option>
+            <option value="precoDesc">Ordenar: preço (maior)</option>
+            <option value="sabores">Ordenar: mais sabores</option>
+          </select>
+          <button class="a-btn ghost" id="btn-importar-lista" type="button">Importar lista</button>
+          <button class="a-btn ghost" id="btn-importar-prod-json" type="button">Importar JSON</button>
+          <button class="a-btn" id="novo-produto" type="button">+ Novo produto</button>
+        </div>
+
+        <div class="a-table-wrap">
+          <table class="a-table">
+            <thead>
+              <tr>
+                <th>Foto</th>
+                <th>Nome</th>
+                <th>Marca</th>
+                <th>Preço</th>
+                <th>Sabores</th>
+                <th>Estoque</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="corpo-produtos"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== Marcas ===== -->
+      <div class="a-view" id="view-marcas">
+        <div class="a-search-row">
+          <span class="a-sub grow" id="marcas-resumo"></span>
+          <button class="a-btn" id="nova-marca" type="button">+ Nova marca</button>
+        </div>
+        <div class="a-table-wrap">
+          <table class="a-table">
+            <thead>
+              <tr>
+                <th>Foto</th>
+                <th>Nome</th>
+                <th>Categoria</th>
+                <th>Produtos</th>
+                <th>Sabores</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="corpo-marcas"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ===== Configurações ===== -->
+      <div class="a-view" id="view-config">
+        <div class="a-card">
+          <div class="a-card-head"><h3>Identidade e contato</h3></div>
+          <div id="form-config"></div>
+        </div>
+        <div class="a-card">
+          <div class="a-card-head"><h3>Segurança do painel</h3></div>
+          <div class="a-grid c2">
+            <div class="a-field">
+              <label for="senha-atual">Senha atual</label>
+              <input type="password" class="a-input" id="senha-atual" autocomplete="current-password" placeholder="••••••">
+            </div>
+            <div class="a-field">
+              <label for="senha-nova">Nova senha</label>
+              <input type="password" class="a-input" id="senha-nova" autocomplete="new-password" placeholder="Digite a nova senha">
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="a-btn ghost" id="btn-trocar-senha" type="button">Alterar senha</button>
+            <button class="a-btn danger" id="btn-sair-config" type="button">Sair do painel</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ===== Publicar ===== -->
+      <div class="a-view" id="view-backup">
+        <div class="a-card">
+          <div class="a-card-head"><h3>Publicar alterações</h3></div>
+          <p style="font-size:13.5px;color:var(--a-muted);line-height:1.7;margin-bottom:14px;">
+            Tudo que você altera aqui é salvo automaticamente e <strong style="color:var(--a-ink)">sincronizado na nuvem</strong> — o site público (para todos os visitantes) atualiza sozinho.
+            O botão abaixo gera uma cópia de segurança em <strong style="color:var(--a-ink)">dados.js</strong>, caso queira guardar o arquivo.
+          </p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="a-btn success" id="btn-dados-js" type="button">Baixar dados.js (backup)</button>
+          </div>
+        </div>
+
+        <div class="a-card">
+          <div class="a-card-head"><h3>Backup completo</h3></div>
+          <p style="font-size:13.5px;color:var(--a-muted);line-height:1.7;margin-bottom:14px;">
+            Exporte ou importe tudo (marcas, produtos e configurações) em um arquivo JSON. Útil para trocar de computador ou guardar uma cópia segura.
+          </p>
+          <div style="display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="a-btn ghost" id="btn-exportar" type="button">Exportar JSON</button>
+            <button class="a-btn ghost" id="btn-importar" type="button">Importar JSON</button>
+            <button class="a-btn danger" id="btn-restaurar" type="button">Restaurar padrão</button>
+            <input type="file" id="input-importar" accept=".json" style="display:none;">
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div class="a-modal-overlay" id="mod-root"></div>
+  <div class="a-toasts" id="toast-root"></div>
+
+  <script src="js/dados.js"></script>
+  <script src="js/main.js"></script>
+  <script src="js/painel.js"></script>
+  <script>
+    initPainel();
+  </script>
+</body>
+</html>

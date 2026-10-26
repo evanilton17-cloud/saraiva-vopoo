@@ -1,6 +1,10 @@
 (function aplicarPainel() {
   try {
-    var guardado = JSON.parse(localStorage.getItem("sv_painel") || "null");
+    var cache = null;
+    try { cache = JSON.parse(sessionStorage.getItem("sv_cat_cache") || "null"); } catch (e) {}
+    var guardado = cache && typeof cache === "object"
+      ? cache
+      : JSON.parse(localStorage.getItem("sv_painel") || "null");
     if (!guardado || typeof guardado !== "object") return;
     if (!Array.isArray(guardado.marcas) || !Array.isArray(guardado.produtos)) return;
     for (var i = 0; i < guardado.produtos.length; i++) {
@@ -12,11 +16,6 @@
     BANCO_DADOS = guardado;
   } catch (e) {}
 })();
-
-function waLink(mensagem) {
-  var base = "https://wa.me/" + BANCO_DADOS.whatsapp + "?text=";
-  return base + encodeURIComponent(mensagem || BANCO_DADOS.whatsappTexto);
-}
 
 function formatarPreco(v) {
   var n = Math.round(v * 100) / 100;
@@ -249,19 +248,14 @@ function CABECALHO_HTML(pagina) {
   return (
     '<header class="cabecalho"><div class="container cabecalho-topo">' +
     '<a class="logo" href="index.html"><b>' +
-    (BANCO_DADOS.nomeMarca || "SARAIVA VAPOR") +
-    "</b><span>" +
-    (BANCO_DADOS.tagline || "Pods Premium") +
-    "</span></a>" +
+    (BANCO_DADOS.nomeMarca || "SARAIVA") +
+    "</b></a>" +
     '<nav class="nav" id="nav">' +
     NAV_HTML(pagina) +
     "</nav>" +
     '<div class="acoes">' +
     '<div class="busca"><input id="busca-global" type="search" placeholder="Buscar por marca, categoria ou sabor..." aria-label="Buscar"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>' +
     '<button class="icone-btn" id="abrir-carrinho" aria-label="Carrinho"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/></svg><span class="badge-carrinho" id="carrinho-badge" hidden>0</span></button>' +
-    '<a class="btn-whats-peq" href="' +
-    waLink() +
-    '" target="_blank" rel="noopener"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.4 5 5.1-1.3A10 10 0 1 0 12 2Z"/></svg><span class="rotulo">WhatsApp</span></a>' +
     '<button class="menu-btn" id="menu-btn" aria-label="Abrir menu">☰</button>' +
     "</div>" +
     "</div></header>"
@@ -273,23 +267,15 @@ function RODAPE_HTML() {
     '<footer class="rodape"><div class="container">' +
     '<div class="rodape-linha">' +
     '<span class="rodape-logo grad-text">' +
-    (BANCO_DADOS.nomeMarca || "SARAIVA VAPOR") +
+    (BANCO_DADOS.nomeMarca || "SARAIVA") +
     "</span>" +
     '<p>© <span id="ano"></span> ' +
-    (BANCO_DADOS.nomeMarca || "SARAIVA VAPOR") +
+    (BANCO_DADOS.nomeMarca || "SARAIVA") +
     ". Todos os direitos reservados.</p>" +
     '<p class="aviso">Venda proibida para menores de 18 anos. Contém nicotina, substância que causa dependência. Produtos de uso adulto.</p>' +
-    '<a class="painel-link" href="painel.html">Painel</a>' +
+    '<a class="painel-link" href="/admin" title="Acesso administrativo" aria-label="Acesso administrativo"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></a>' +
     "</div>" +
     "</div></footer>"
-  );
-}
-
-function WA_FLUTUANTE_HTML() {
-  return (
-    '<a class="wa-flutuante" href="' +
-    waLink() +
-    '" target="_blank" rel="noopener" aria-label="Conversar no WhatsApp"><svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15l-1.4 5 5.1-1.3A10 10 0 1 0 12 2Z"/></svg></a>'
   );
 }
 
@@ -488,8 +474,6 @@ function montarPagina(pagina) {
 
   document.getElementById("cabecalho").innerHTML = CABECALHO_HTML(pagina);
   document.getElementById("rodape").innerHTML = RODAPE_HTML();
-  var wa = document.getElementById("wa-flutuante");
-  if (wa) wa.innerHTML = WA_FLUTUANTE_HTML();
   document.getElementById("ano").textContent = new Date().getFullYear();
 
   var principal = document.querySelector("main");

@@ -3,24 +3,24 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Saraiva Vapor — Pods Premium, modelos e sabores</title>
-  <meta name="description" content="Saraiva Vapor — pods premium. Escolha sua marca e veja modelos, sabores e preços.">
+  <title>Saraiva — Pods Premium, modelos e sabores</title>
+  <meta name="description" content="Saraiva — pods premium. Escolha sua marca e veja modelos, sabores e preços.">
   <meta http-equiv="Cache-Control" content="no-store">
-  <meta name="theme-color" content="#08090b">
+  <meta name="theme-color" content="#050506">
   <meta name="robots" content="index, follow">
   <link rel="icon" type="image/svg+xml" href="favicon.svg">
   <link rel="canonical" href="https://saraiva-vopoo.vercel.app/">
   <meta property="og:type" content="website">
-  <meta property="og:site_name" content="Saraiva Vapor">
-  <meta property="og:title" content="Saraiva Vapor — Pods Premium, modelos e sabores">
+  <meta property="og:site_name" content="Saraiva">
+  <meta property="og:title" content="Saraiva — Pods Premium, modelos e sabores">
   <meta property="og:description" content="Pods descartáveis, refis e acessórios premium. Escolha sua marca, veja modelos, sabores e preços. Venda proibida para menores de 18 anos.">
-  <meta property="og:image" content="https://saraiva-vopoo.vercel.app/img/pag2.jpg">
+  <meta property="og:image" content="https://saraiva-vopoo.vercel.app/img/hero.jpg">
   <meta property="og:url" content="https://saraiva-vopoo.vercel.app/">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=5">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
   <div id="cabecalho"></div>
@@ -31,7 +31,7 @@
     <div class="v-orb b"></div>
     <div class="v-orb c"></div>
     <div class="v-cena" id="v-cena">
-      <img src="img/pag2.jpg" alt="">
+      <img src="img/hero.jpg" alt="">
     </div>
     <div class="v-nuvem" id="v-nuvem">
       <i></i><i></i><i></i><i></i>
@@ -63,10 +63,10 @@
       <div class="cta">
         <div style="padding: 44px 28px;" class="cta-inner">
           <h2 style="font-weight: 800;">Não sabe qual escolher?</h2>
-          <p style="color: var(--texto-2); margin: 10px 0 24px; max-width: 460px;">Manda uma mensagem. A gente te ajuda a decidir o melhor modelo para você.</p>
-          <a class="btn btn-whats" href="#" id="cta-whats" target="_blank" rel="noopener">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M7.9 20 9 13 20 4 4 11.5 2 15a30 30 0 0 0 6 5Z"/></svg>
-            Falar com a loja
+          <p style="color: var(--texto-2); margin: 10px 0 24px; max-width: 460px;">Confira o catálogo completo, escolha os sabores e monte seu pedido. Na finalização você escolhe o pagamento, gera seu cupom e envia para a loja.</p>
+          <a class="btn btn-primario" href="catalogo.html">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>
+            Ver catálogo
           </a>
         </div>
       </div>
@@ -77,11 +77,11 @@
   </main>
 
   <div id="rodape"></div>
-  <div id="wa-flutuante"></div>
 
   <script src="js/dados.js?v=3"></script>
-  <script src="js/main.js?v=4"></script>
+  <script src="js/main.js?v=6"></script>
   <script src="js/cart.js?v=3"></script>
+  <script src="js/live.js?v=1"></script>
   <script>
     montarPagina("marcas");
 
@@ -130,7 +130,6 @@
     });
 
     montarGrade();
-    document.getElementById("cta-whats").href = waLink();
   </script>
 </body>
 </html>
