@@ -714,6 +714,7 @@ function autosaveConfig() {
   if (novaSenha) {
     estado.senha = novaSenha;
     localStorage.setItem(CHAVE_SENHA, novaSenha);
+    atualizarSenhaRemota(novaSenha);
   }
   estado.efeitos = {
     fumaca: get("c-fumaca").checked,
@@ -767,8 +768,40 @@ function importarJSON(arquivo) {
 }
 
 /* ---------- Login ---------- */
-function senhaAtual() {
-  return (estado && estado.senha) || localStorage.getItem(CHAVE_SENHA) || SENHA_PADRAO;
+async function buscarSenhaRemota() {
+  try {
+    const res = await fetch("/api/admin-senha");
+    if (!res.ok) return null;
+    const j = await res.json();
+    if (j && j.ok && typeof j.senha === "string") return j.senha;
+  } catch (e) {}
+  return null;
+}
+
+async function atualizarSenhaRemota(senha) {
+  try {
+    await fetch("/api/admin-senha", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-admin-token": (estado && estado.senha) || "" },
+      body: JSON.stringify({ senha }),
+    });
+  } catch (e) {}
+}
+
+var senhaRemotaCache = null;
+async function senhaAtual() {
+  if (senhaRemotaCache) return senhaRemotaCache;
+  var local = (estado && estado.senha) || localStorage.getItem(CHAVE_SENHA);
+  if (local) {
+    senhaRemotaCache = local;
+    return local;
+  }
+  var remota = await buscarSenhaRemota();
+  if (remota) {
+    senhaRemotaCache = remota;
+    return remota;
+  }
+  return SENHA_PADRAO;
 }
 
 function mostrarAuth() {
@@ -792,6 +825,7 @@ function mostrarApp() {
 
 function sair() {
   localStorage.removeItem(CHAVE_LOGIN);
+  senhaRemotaCache = null;
   fecharModal();
   mostrarAuth();
 }
@@ -1611,14 +1645,20 @@ function initPainel() {
   atualizarStatus();
 
   /* Login */
-  get("auth-form").addEventListener("submit", function (e) {
+  get("auth-form").addEventListener("submit", async function (e) {
     e.preventDefault();
     var val = get("auth-senha").value.trim();
-    if (val === senhaAtual()) {
-      localStorage.setItem(CHAVE_LOGIN, "1");
-      get("auth-senha").value = "";
-      mostrarApp();
-    } else {
+    try {
+      var senha = await senhaAtual();
+      if (val === senha) {
+        localStorage.setItem(CHAVE_LOGIN, "1");
+        get("auth-senha").value = "";
+        mostrarApp();
+      } else {
+        get("auth-err").classList.add("show");
+        get("auth-senha").select();
+      }
+    } catch (err) {
       get("auth-err").classList.add("show");
       get("auth-senha").select();
     }
