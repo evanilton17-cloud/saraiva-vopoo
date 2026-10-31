@@ -4,10 +4,13 @@
    ============================================================ */
 
 var CHAVE_PAINEL = "sv_painel";
-var CHAVE_SENHA = "sv_admin_senha";
 var CHAVE_LOGIN = "sv_admin_ok";
 var CHAVE_TEMPO = "sv_painel_em";
-var SENHA_PADRAO = "admin";
+
+/* Versões antigas guardavam a senha no navegador: limpa por segurança. */
+try {
+  localStorage.removeItem("sv_admin_senha");
+} catch (e) {}
 
 var estado = JSON.parse(JSON.stringify(BANCO_DADOS));
 var modoEdicaoProduto = null;
@@ -426,7 +429,8 @@ function ligarCampoFoto(pre) {
             .then(function (arquivo) {
               return fetch("api/foto", {
                 method: "POST",
-                headers: { "Content-Type": "image/jpeg", "x-loja-token": LOJA_TOKEN },
+                credentials: "same-origin",
+                headers: { "Content-Type": "image/jpeg" },
                 body: arquivo
               });
             })
@@ -683,7 +687,6 @@ function renderConfig() {
     '<div class="a-field"><label>Nome do site</label><input class="a-input" id="c-nome" value="' + escAttr(estado.nomeSite || "") + '"></div>' +
     '<div class="a-field"><label>Nome da marca (logo)</label><input class="a-input" id="c-marca" value="' + escAttr(estado.nomeMarca || "") + '"></div>' +
     "</div>" +
-    '<div class="a-field"><label>Senha do painel</label><input class="a-input" id="c-senha" type="password" value="' + escAttr(estado.senha || "") + '" placeholder="Deixe em branco para manter a atual"></div>' +
     '<div class="a-field"><label>Frase de apoio (tagline)</label><input class="a-input" id="c-tagline" value="' + escAttr(estado.tagline || "") + '"></div>' +
     '<div class="a-field"><label>Link de contato (opcional, sem WhatsApp)</label><input class="a-input" id="c-contato" value="' + escAttr(estado.contato || "") + '"></div>' +
     '<div class="a-field"><label>Como os pedidos chegam até você</label>' +
@@ -697,7 +700,7 @@ function renderConfig() {
     "</div></div>" +
     '<p style="font-size:12.5px;color:var(--a-muted-2);margin:12px 0 0;">Salvas automaticamente enquanto você digita.</p>';
 
-  ["c-nome", "c-marca", "c-tagline", "c-contato", "c-senha"].forEach(function (id) {
+  ["c-nome", "c-marca", "c-tagline", "c-contato"].forEach(function (id) {
     get(id).addEventListener("input", autosaveConfig);
   });
   ["c-fumaca", "c-spotlight", "c-parallax"].forEach(function (id) {
@@ -710,13 +713,6 @@ function autosaveConfig() {
   estado.nomeMarca = get("c-marca").value.trim() || "SARAIVA";
   estado.tagline = get("c-tagline").value.trim() || "";
   estado.contato = get("c-contato").value.trim();
-  var novaSenha = get("c-senha").value.trim();
-  if (novaSenha && novaSenha !== estado.senha) {
-    estado.senha = novaSenha;
-    localStorage.setItem(CHAVE_SENHA, novaSenha);
-    senhaRemotaCache = novaSenha;
-    agendarPushSenha(novaSenha);
-  }
   estado.efeitos = {
     fumaca: get("c-fumaca").checked,
     spotlight: get("c-spotlight").checked,
@@ -768,104 +764,75 @@ function importarJSON(arquivo) {
   leitor.readAsText(arquivo);
 }
 
-/* ---------- Login ---------- */
-async function buscarSenhaRemota() {
-  try {
-    const res = await fetch("/api/admin-senha");
-    if (!res.ok) return null;
-    const j = await res.json();
-    if (j && j.ok && typeof j.senha === "string") return j.senha;
-  } catch (e) {}
-  return null;
-}
-
-/* Senha que está na nuvem. Ela é usada como token para autorizar a troca,
-   então precisa ser a senha ATUAL (antes da troca), não a nova.
-   Se o KV ainda estiver vazio, o servidor aceita a senha padrão. */
-var senhaNuvem = null;
-async function tokenDaNuvem() {
-  if (senhaNuvem) return senhaNuvem;
-  var remota = await buscarSenhaRemota();
-  senhaNuvem = remota || SENHA_PADRAO;
-  return senhaNuvem;
-}
-
-async function atualizarSenhaRemota(senhaNova, token) {
+/* ---------- Sessão do painel (cookie HttpOnly — a senha nunca fica no navegador) ---------- */
+async function apiLogin(senha) {
   try {
     const res = await fetch("/api/admin-senha", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-admin-token": token || "" },
-      body: JSON.stringify({ senha: senhaNova }),
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ senha: senha }),
     });
-    if (!res.ok) return false;
     const j = await res.json().catch(function () { return null; });
-    return !!(j && j.ok);
+    return {
+      ok: !!(res.ok && j && j.ok && j.logado),
+      erro: (j && j.erro) || "Não foi possível entrar agora",
+    };
+  } catch (e) {
+    return { ok: false, erro: "Sem conexão com o servidor" };
+  }
+}
+
+async function apiSessaoAtiva() {
+  try {
+    const res = await fetch("/api/admin-senha", { credentials: "same-origin", cache: "no-store" });
+    if (!res.ok) return false;
+    const j = await res.json();
+    return !!(j && j.ok && j.logado);
   } catch (e) {
     return false;
   }
 }
 
-/* Agrupa a digitação no campo de senha para não enviar uma troca por letra. */
-var pushSenhaTimer = null;
-function agendarPushSenha(senhaNova) {
-  clearTimeout(pushSenhaTimer);
-  pushSenhaTimer = setTimeout(function () {
-    empurrarSenha(senhaNova);
-  }, 900);
-}
-
-function empurrarSenha(senhaNova, silencioso) {
-  return tokenDaNuvem()
-    .then(function (token) {
-      return atualizarSenhaRemota(senhaNova, token);
-    })
-    .then(function (ok) {
-      if (ok) {
-        senhaNuvem = senhaNova;
-        if (!silencioso) toast("Senha sincronizada na nuvem", "ok");
-      } else if (!silencioso) {
-        toast(
-          "Senha salva aqui, mas não sincronizou na nuvem. Confira a conexão e salve de novo.",
-          "err"
-        );
-      }
-    })
-    .catch(function () {
-      if (!silencioso) toast("Senha salva aqui, mas não sincronizou na nuvem.", "err");
+async function apiTrocarSenha(senhaAtual, senhaNova) {
+  try {
+    const res = await fetch("/api/admin-senha", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ senhaAtual: senhaAtual, senhaNova: senhaNova }),
     });
+    const j = await res.json().catch(function () { return null; });
+    return { ok: !!(res.ok && j && j.ok), erro: (j && j.erro) || "Não foi possível trocar a senha" };
+  } catch (e) {
+    return { ok: false, erro: "Sem conexão com o servidor" };
+  }
 }
 
-var senhaRemotaCache = null;
-async function senhaAtual() {
-  if (senhaRemotaCache) return senhaRemotaCache;
-  var local = (estado && estado.senha) || localStorage.getItem(CHAVE_SENHA);
-  var remota = await buscarSenhaRemota();
-  if (remota) {
-    /* A nuvem é a fonte da verdade: se este navegador estava com outra
-       senha (antiga ou só local), passa a usar a da nuvem. */
-    if (local !== remota) {
-      try { localStorage.setItem(CHAVE_SENHA, remota); } catch (e) {}
-      if (estado) estado.senha = remota;
-    }
-    senhaNuvem = remota;
-    senhaRemotaCache = remota;
-    return remota;
-  }
-  if (local) {
-    /* Nuvem ainda sem senha: usa a local e envia para a nuvem (uma vez). */
-    senhaRemotaCache = local;
-    senhaNuvem = SENHA_PADRAO;
-    empurrarSenha(local, true);
-    return local;
-  }
-  senhaRemotaCache = SENHA_PADRAO;
-  return SENHA_PADRAO;
+async function apiSair() {
+  try {
+    await fetch("/api/admin-senha", { method: "DELETE", credentials: "same-origin" });
+  } catch (e) {}
+}
+
+/* Só mostra a dica da senha padrão se a nuvem ainda não tem senha definida. */
+async function atualizarDicaSenha() {
+  var dica = get("auth-hint");
+  if (!dica) return;
+  try {
+    var res = await fetch("/api/admin-senha", { credentials: "same-origin", cache: "no-store" });
+    if (!res.ok) return;
+    var j = await res.json();
+    if (j && j.ok && j.definida === false) dica.style.display = "block";
+    else dica.style.display = "none";
+  } catch (e) {}
 }
 
 function mostrarAuth() {
   get("auth-root").style.display = "flex";
   get("app").style.display = "none";
   get("auth-err").classList.remove("show");
+  atualizarDicaSenha();
   setTimeout(function () { get("auth-senha").focus(); }, 40);
 }
 
@@ -882,8 +849,8 @@ function mostrarApp() {
 }
 
 function sair() {
+  apiSair();
   localStorage.removeItem(CHAVE_LOGIN);
-  senhaRemotaCache = null;
   fecharModal();
   mostrarAuth();
 }
@@ -1203,7 +1170,6 @@ function criarProdutosDoJSON(lista, marcasExtra, substituir) {
 
 /* ---------- Vendas / Faturamento ---------- */
 var CHAVE_VENDAS = "sv_vendas";
-var LOJA_TOKEN = "sv8e4ac97ff788574ee6633547";
 var vendas = [];
 var vendasFiltro = "mes";
 var COR_PAG = { Pix: "#22d3ee", Cartão: "#a855f7", Dinheiro: "#f59e0b" };
@@ -1236,10 +1202,8 @@ function pedidoServidor(opcoes) {
   }
   return fetch(url, {
     method: opts.method || "GET",
-    headers: Object.assign(
-      { "x-loja-token": LOJA_TOKEN },
-      opts.json ? { "Content-Type": "application/json" } : {}
-    ),
+    credentials: "same-origin",
+    headers: opts.json ? { "Content-Type": "application/json" } : {},
     body: opts.json ? JSON.stringify(opts.json) : undefined
   }).then(function (r) {
     return r.json();
@@ -1269,10 +1233,8 @@ function empurrarCatalogo() {
   } catch (e) { return; }
   fetch("api/catalogo", {
     method: "POST",
-    headers: Object.assign(
-      { "x-loja-token": LOJA_TOKEN },
-      { "Content-Type": "application/json" }
-    ),
+    credentials: "same-origin",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   })
     .then(function (r) { return r.json(); })
@@ -1706,18 +1668,18 @@ function initPainel() {
   get("auth-form").addEventListener("submit", async function (e) {
     e.preventDefault();
     var val = get("auth-senha").value.trim();
-    try {
-      var senha = await senhaAtual();
-      if (val === senha) {
-        localStorage.setItem(CHAVE_LOGIN, "1");
-        get("auth-senha").value = "";
-        mostrarApp();
-      } else {
-        get("auth-err").classList.add("show");
-        get("auth-senha").select();
-      }
-    } catch (err) {
+    var botao = get("auth-form").querySelector("button");
+    if (botao) botao.disabled = true;
+    var r = await apiLogin(val);
+    if (botao) botao.disabled = false;
+    if (r.ok) {
+      localStorage.setItem(CHAVE_LOGIN, "1");
+      get("auth-senha").value = "";
+      get("auth-err").classList.remove("show");
+      mostrarApp();
+    } else {
       get("auth-err").classList.add("show");
+      try { get("auth-err").textContent = r.erro; } catch (e2) {}
       get("auth-senha").select();
     }
   });
@@ -1734,22 +1696,14 @@ function initPainel() {
   get("btn-trocar-senha").addEventListener("click", async function () {
     var atual = get("senha-atual").value;
     var nova = get("senha-nova").value.trim();
-    var senha = await senhaAtual();
-    if (atual !== senha) { toast("Senha atual incorreta", "err"); return; }
     if (nova.length < 4) { toast("A nova senha deve ter ao menos 4 caracteres", "err"); return; }
-    var token = await tokenDaNuvem();
-    estado.senha = nova;
-    localStorage.setItem(CHAVE_SENHA, nova);
-    try { localStorage.setItem(CHAVE_PAINEL, JSON.stringify(estado)); } catch (e) {}
-    senhaRemotaCache = nova;
-    get("senha-atual").value = "";
-    get("senha-nova").value = "";
-    var ok = await atualizarSenhaRemota(nova, token);
-    if (ok) {
-      senhaNuvem = nova;
+    var r = await apiTrocarSenha(atual, nova);
+    if (r.ok) {
+      get("senha-atual").value = "";
+      get("senha-nova").value = "";
       toast("Senha alterada e sincronizada na nuvem", "ok");
     } else {
-      toast("Senha alterada neste navegador, mas não sincronizou na nuvem", "err");
+      toast(r.erro, "err");
     }
   });
 
@@ -1907,6 +1861,18 @@ function initPainel() {
 
   sincronizarCatalogo();
 
-  if (localStorage.getItem(CHAVE_LOGIN) === "1") mostrarApp();
-  else mostrarAuth();
+  /* A sessão de verdade está no cookie HttpOnly; o localStorage só evita
+     piscar a tela de login. Se o cookie expirou, volta pro login. */
+  if (localStorage.getItem(CHAVE_LOGIN) === "1") {
+    apiSessaoAtiva().then(function (ok) {
+      if (ok) {
+        mostrarApp();
+      } else {
+        localStorage.removeItem(CHAVE_LOGIN);
+        mostrarAuth();
+      }
+    });
+  } else {
+    mostrarAuth();
+  }
 }

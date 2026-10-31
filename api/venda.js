@@ -1,28 +1,14 @@
 /* API de vendas — sincroniza pedidos entre o site e o painel (Vercel Function, Web Handler).
-   Usa o Vercel KV (Upstash Redis) via variáveis KV_REST_API_URL e KV_REST_API_TOKEN.
-   Rota /api/venda:  GET (listar) · POST (registrar) · DELETE (excluir/limpar). */
+   Rota /api/venda:
+     POST   — cliente registra o pedido (público)
+     GET    — painel logado lista as vendas
+     DELETE — painel logado exclui/limpa */
+
+import { kvChamar, kvOK, respostaJSON, sessaoValida } from "./_auth.js";
 
 export const runtime = "nodejs";
 
 const CHAVE = "sv_vendas";
-
-function configKV() {
-  const url = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
-  if (!url || !token) return null;
-  return { url: String(url).replace(/\/+$/, ""), token };
-}
-
-async function kvChamar(caminho, opcoes) {
-  const k = configKV();
-  const res = await fetch(k.url + caminho, {
-    method: (opcoes && opcoes.method) || "GET",
-    headers: Object.assign({ Authorization: "Bearer " + k.token }, (opcoes && opcoes.headers) || {}),
-    body: opcoes && opcoes.body
-  });
-  if (!res.ok) throw new Error("KV " + res.status);
-  return res.json();
-}
 
 async function todasVendas() {
   const j = await kvChamar("/lrange/" + CHAVE + "/0/-1");
@@ -57,49 +43,49 @@ function vendaValida(v) {
   );
 }
 
-function autorizado(req) {
-  const t = process.env.SV_LOJA_TOKEN;
-  if (!t) return true;
-  return req.headers.get("x-loja-token") === t;
-}
-
 export default {
   async fetch(req) {
-    if (!configKV()) {
-      return Response.json({ ok: false, erro: "Armazenamento (Vercel KV) ainda não configurado" }, { status: 503 });
-    }
-    if (!autorizado(req)) {
-      return Response.json({ ok: false, erro: "Sem autorização" }, { status: 401 });
+    if (!kvOK()) {
+      return respostaJSON(
+        { ok: false, erro: "Armazenamento (Vercel KV) ainda não configurado" },
+        503
+      );
     }
 
     const metodo = req.method;
 
-    if (metodo === "GET") {
-      try {
-        const lista = await todasVendas();
-        return Response.json({ ok: true, vendas: lista.map((x) => x.v) });
-      } catch (e) {
-        return Response.json({ ok: false, erro: "Erro ao ler vendas" }, { status: 500 });
-      }
-    }
-
+    /* Pedido do cliente: aberto, sem login. */
     if (metodo === "POST") {
       let v = null;
       try {
         v = (await req.json()).venda;
       } catch (e) {}
       if (!vendaValida(v)) {
-        return Response.json({ ok: false, erro: "Venda inválida" }, { status: 400 });
+        return respostaJSON({ ok: false, erro: "Venda inválida" }, 400);
       }
       try {
         const atuais = await todasVendas();
         if (atuais.some((x) => x.v && x.v.ncupom === v.ncupom)) {
-          return Response.json({ ok: false, erro: "Cupom duplicado" }, { status: 409 });
+          return respostaJSON({ ok: false, erro: "Cupom duplicado" }, 409);
         }
         await kvChamar("/lpush/" + CHAVE, { method: "POST", body: envelope(v) });
-        return Response.json({ ok: true, venda: v }, { status: 201 });
+        return respostaJSON({ ok: true, venda: v }, 201);
       } catch (e) {
-        return Response.json({ ok: false, erro: "Erro ao salvar venda" }, { status: 500 });
+        return respostaJSON({ ok: false, erro: "Erro ao salvar venda" }, 500);
+      }
+    }
+
+    /* Daqui pra baixo só o painel logado. */
+    if (!(await sessaoValida(req))) {
+      return respostaJSON({ ok: false, erro: "Entre no painel para ver as vendas" }, 401);
+    }
+
+    if (metodo === "GET") {
+      try {
+        const lista = await todasVendas();
+        return respostaJSON({ ok: true, vendas: lista.map((x) => x.v) });
+      } catch (e) {
+        return respostaJSON({ ok: false, erro: "Erro ao ler vendas" }, 500);
       }
     }
 
@@ -115,13 +101,13 @@ export default {
       if (corpo.limpar === true) {
         try {
           await kvChamar("/del/" + CHAVE, { method: "POST" });
-          return Response.json({ ok: true });
+          return respostaJSON({ ok: true });
         } catch (e) {
-          return Response.json({ ok: false, erro: "Erro ao limpar" }, { status: 500 });
+          return respostaJSON({ ok: false, erro: "Erro ao limpar" }, 500);
         }
       }
       if (!corpo.id) {
-        return Response.json({ ok: false, erro: "Sem id" }, { status: 400 });
+        return respostaJSON({ ok: false, erro: "Sem id" }, 400);
       }
       try {
         const lista2 = await todasVendas();
@@ -129,12 +115,12 @@ export default {
         if (alvo) {
           await kvChamar("/lrem/" + CHAVE + "/0", { method: "POST", body: envelope(alvo.v) });
         }
-        return Response.json({ ok: true });
+        return respostaJSON({ ok: true });
       } catch (e) {
-        return Response.json({ ok: false, erro: "Erro ao excluir venda" }, { status: 500 });
+        return respostaJSON({ ok: false, erro: "Erro ao excluir venda" }, 500);
       }
     }
 
-    return Response.json({ ok: false, erro: "Método não permitido" }, { status: 405 });
-  }
+    return respostaJSON({ ok: false, erro: "Método não permitido" }, 405);
+  },
 };

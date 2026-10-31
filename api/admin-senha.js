@@ -1,76 +1,88 @@
-/* API de senha do admin — sincroniza senha entre dispositivos (Vercel KV).
+/* API de senha do admin — login, logout e troca de senha.
    Rota /api/admin-senha:
-     GET  — retorna a senha atual
-     POST/PUT — atualiza a senha (exige x-admin-token igual à senha atual)
-*/
+     GET      — diz apenas se existe senha e se a sessão está ativa (nunca devolve a senha)
+     POST     — { senha } entra no painel · { senhaAtual, senhaNova } troca a senha
+     DELETE   — sai (apaga o cookie de sessão) */
+
+import {
+  criarCookie,
+  cookieDeSaida,
+  dentroDoLimite,
+  kvOK,
+  respostaJSON,
+  senhaDefinida,
+  sessaoValida,
+  trocarSenha,
+  verificarSenha,
+} from "./_auth.js";
 
 export const runtime = "nodejs";
 
-const CHAVE = "sv_admin_senha";
-const SENHA_PADRAO = "admin";
-
-function configKV() {
-  const url = process.env.KV_REST_API_URL;
-  const token = process.env.KV_REST_API_TOKEN;
-  if (!url || !token) return null;
-  return { url: String(url).replace(/\/+$/, ""), token };
-}
-
-async function kvChamar(caminho, opcoes) {
-  const k = configKV();
-  const res = await fetch(k.url + caminho, {
-    method: (opcoes && opcoes.method) || "GET",
-    headers: Object.assign({ Authorization: "Bearer " + k.token }, (opcoes && opcoes.headers) || {}),
-    body: opcoes && opcoes.body,
-  });
-  if (!res.ok) throw new Error("KV " + res.status);
-  return res.json();
-}
-
-async function lerSenhaAtual() {
-  const j = await kvChamar("/get/" + CHAVE);
-  return (j && j.result) || "";
-}
-
-async function autorizado(req) {
-  const token = req.headers.get("x-admin-token");
-  if (!token) return false;
-  const atual = await lerSenhaAtual();
-  return token === atual || token === SENHA_PADRAO;
-}
-
 export default {
   async fetch(req) {
-    if (!configKV()) {
-      return Response.json({ ok: false, erro: "Armazenamento não configurado" }, { status: 503 });
+    if (!kvOK()) {
+      return respostaJSON({ ok: false, erro: "Armazenamento (Vercel KV) ainda não configurado" }, 503);
     }
 
     if (req.method === "GET" || req.method === "HEAD") {
       try {
-        const senha = await lerSenhaAtual();
-        return Response.json({ ok: true, senha });
+        const definida = await senhaDefinida();
+        const logado = await sessaoValida(req);
+        return respostaJSON({ ok: true, definida: definida, logado: logado });
       } catch (e) {
-        return Response.json({ ok: false, erro: "Erro ao ler senha" }, { status: 500 });
+        return respostaJSON({ ok: false, erro: "Erro ao ler a senha" }, 500);
       }
+    }
+
+    if (req.method === "DELETE") {
+      return respostaJSON({ ok: true }, 200, { "set-cookie": cookieDeSaida() });
     }
 
     if (req.method === "POST" || req.method === "PUT") {
-      if (!(await autorizado(req))) {
-        return Response.json({ ok: false, erro: "Não autorizado" }, { status: 401 });
-      }
+      let corpo = {};
       try {
-        const body = await req.json();
-        const senha = (body && body.senha) || "";
-        await kvChamar("/set/" + CHAVE, {
-          method: "POST",
-          body: senha,
-        });
-        return Response.json({ ok: true });
+        corpo = await req.json();
+      } catch (e) {}
+
+      const senhaAtual = typeof corpo.senhaAtual === "string" ? corpo.senhaAtual : "";
+      const senhaNova = typeof corpo.senhaNova === "string" ? corpo.senhaNova : "";
+
+      /* Troca de senha */
+      if (senhaNova) {
+        if (senhaNova.length < 4) {
+          return respostaJSON({ ok: false, erro: "A nova senha deve ter ao menos 4 caracteres" }, 400);
+        }
+        try {
+          if (!(await sessaoValida(req))) {
+            if (!(await dentroDoLimite(req))) {
+              return respostaJSON({ ok: false, erro: "Muitas tentativas. Tente de novo em alguns minutos." }, 429);
+            }
+            const atual = await verificarSenha(senhaAtual);
+            if (!atual) return respostaJSON({ ok: false, erro: "Senha atual incorreta" }, 401);
+          }
+          const reg = await trocarSenha(senhaNova);
+          return respostaJSON({ ok: true, logado: true }, 200, { "set-cookie": criarCookie(reg) });
+        } catch (e) {
+          return respostaJSON({ ok: false, erro: "Erro ao salvar a senha" }, 500);
+        }
+      }
+
+      /* Login */
+      const senha = typeof corpo.senha === "string" ? corpo.senha : "";
+      if (!senha) return respostaJSON({ ok: false, erro: "Informe a senha" }, 400);
+
+      try {
+        if (!(await dentroDoLimite(req))) {
+          return respostaJSON({ ok: false, erro: "Muitas tentativas. Tente de novo em alguns minutos." }, 429);
+        }
+        const reg = await verificarSenha(senha);
+        if (!reg) return respostaJSON({ ok: false, erro: "Senha incorreta" }, 401);
+        return respostaJSON({ ok: true, logado: true }, 200, { "set-cookie": criarCookie(reg) });
       } catch (e) {
-        return Response.json({ ok: false, erro: "Erro ao salvar senha" }, { status: 500 });
+        return respostaJSON({ ok: false, erro: "Erro ao conferir a senha" }, 500);
       }
     }
 
-    return Response.json({ ok: false, erro: "Método não permitido" }, { status: 405 });
+    return respostaJSON({ ok: false, erro: "Método não permitido" }, 405);
   },
 };

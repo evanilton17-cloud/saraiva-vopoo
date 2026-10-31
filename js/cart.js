@@ -1,12 +1,12 @@
 var CARRINHO_CHAVE = "sv_carrinho";
-var LOJA_TOKEN = "sv8e4ac97ff788574ee6633547";
 var carrinho = [];
 
 function enviarVendaServidor(venda) {
   try {
     fetch("api/venda", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-loja-token": LOJA_TOKEN },
+      credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ venda: venda }),
       keepalive: true
     }).catch(function () {});
