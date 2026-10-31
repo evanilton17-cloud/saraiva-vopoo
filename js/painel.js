@@ -434,8 +434,12 @@ function ligarCampoFoto(pre) {
                 body: arquivo
               });
             })
-            .then(function (r) { return r.json(); })
+            .then(function (r) {
+              if (r.status === 401) { sessaoExpirou(); return null; }
+              return r.json();
+            })
             .then(function (j) {
+              if (!j) return;
               if (j && j.ok && j.url) {
                 aplicarUrl(j.url);
                 toast("Foto enviada para a nuvem. Clique em Salvar.");
@@ -1222,6 +1226,18 @@ function agendarPushCatalogo() {
   pushCatalogoTimer = setTimeout(empurrarCatalogo, 700);
 }
 
+function sessaoExpirou() {
+  /* Se o painel está aberto e o cookie venceu, volta pro login avisando. */
+  if (get("app").style.display === "none") return;
+  localStorage.removeItem(CHAVE_LOGIN);
+  mostrarAuth();
+  var erro = get("auth-err");
+  if (erro) {
+    erro.textContent = "Sua sessão expirou. Entre novamente para salvar as alterações.";
+    erro.classList.add("show");
+  }
+}
+
 function empurrarCatalogo() {
   var payload = {
     atualizadoEm: estado.atualizadoEm || Date.now(),
@@ -1237,8 +1253,12 @@ function empurrarCatalogo() {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(payload)
   })
-    .then(function (r) { return r.json(); })
+    .then(function (r) {
+      if (r.status === 401) { sessaoExpirou(); return null; }
+      return r.json();
+    })
     .then(function (j) {
+      if (!j) return;
       if (j && j.ok && j.catalogo && j.catalogo.atualizadoEm) {
         estado.atualizadoEm = j.catalogo.atualizadoEm;
         try { localStorage.setItem(CHAVE_PAINEL, JSON.stringify(estado)); } catch (e) {}
@@ -1677,6 +1697,10 @@ function initPainel() {
       get("auth-senha").value = "";
       get("auth-err").classList.remove("show");
       mostrarApp();
+      /* Agora que existe sessão, confere de novo a nuvem: se houver
+         alteração local mais nova, ela sobe (antes do login isso dava 401). */
+      sincronizarCatalogo();
+      sincronizarVendas();
     } else {
       get("auth-err").classList.add("show");
       try { get("auth-err").textContent = r.erro; } catch (e2) {}
