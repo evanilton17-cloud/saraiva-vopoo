@@ -155,9 +155,9 @@ function produtoCardHTML(prod) {
   var marca = marcaPorSlug(prod.marca);
   var temEstoque = produtoTemEstoque(prod);
   var qa = temEstoque
-    ? '<button class="quick-add" title="Adicionar ao pedido" data-add="' +
-      prod.id +
-      '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>'
+    ? '<a class="quick-add" title="Escolher sabor e quantidade" aria-label="Escolher sabor e quantidade" href="produto.html?produto=' +
+      encodeURIComponent(prod.slug) +
+      '"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 6l6 6-6 6"/></svg></a>'
     : "";
   var img = prod.imagem ||
     (marca && marca.imagem) ||

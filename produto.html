@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=6">
+  <link rel="stylesheet" href="css/style.css?v=7">
 </head>
 <body>
   <div id="cabecalho"></div>
@@ -50,8 +50,8 @@
   <div id="rodape"></div>
 
   <script src="js/dados.js?v=3"></script>
-  <script src="js/main.js?v=6"></script>
-  <script src="js/cart.js?v=3"></script>
+  <script src="js/main.js?v=7"></script>
+  <script src="js/cart.js?v=4"></script>
   <script src="js/live.js?v=1"></script>
   <script>
     montarPagina("pods");
@@ -117,7 +117,7 @@
       var pilulas = prod.sabores
         .map(function (s, i) {
           var estado = s.estoque ? "ativo" : "desabilitado";
-          var seletor = s.estoque ? " data-escolher-sabor=\"" + i + "\"" : " disabled";
+          var seletor = s.estoque ? ' data-escolher-sabor="' + i + '" aria-pressed="false"' : ' disabled aria-pressed="false"';
           return (
             '<button class="pill ' +
             estado +
@@ -137,7 +137,7 @@
         '<div class="badges-linha">' + badgeEstoque + badgeNovo + badgePromo + pillPuffs + "</div>" +
         '<div class="specs">' + specs + "</div>" +
         '<div class="preco-destaque"><span class="de" id="preco-de" hidden></span><span class="atual" id="preco-atual"></span></div>' +
-        '<div class="grupo-sabor"><h4>Escolha o sabor</h4><div class="pilulas-sabor" id="pilulas-sabor">' + pilulas + "</div></div>" +
+        '<div class="grupo-sabor"><h4>Escolha o sabor</h4><div class="pilulas-sabor" id="pilulas-sabor">' + pilulas + '</div><span class="sabor-escolhido" id="sabor-escolhido"></span></div>' +
         '<div class="grupo-qtd"><h4>Quantidade</h4>' +
         '<span class="stepper"><button id="qtd-menos" ' + (emEstoque ? "" : "disabled") + '>−</button><span class="qtd-valor" id="qtd-valor">1</span><button id="qtd-mais" ' + (emEstoque ? "" : "disabled") + '>+</button></span></div>' +
         '<button class="btn btn-primario" id="btn-adicionar" ' + (emEstoque ? "" : "disabled") + '>' +
@@ -156,10 +156,20 @@
           idxPrimeiro = i;
         }
       });
-      if (primeiro) {
-        saborEscolhido = primeiro;
-        selecionarSabor(prod, idxPrimeiro);
+
+      /* Esta é a função que guarda o sabor de verdade: é o valor daqui
+         que vai para o carrinho. Antes ela não atualizava nada, então o
+         pedido saía sempre com o primeiro sabor do produto. */
+      function escolherSabor(i) {
+        var s = prod.sabores[i];
+        if (!s || !s.estoque) return;
+        saborEscolhido = s;
+        selecionarSabor(prod, i);
+        var rotulo = document.getElementById("sabor-escolhido");
+        if (rotulo) rotulo.textContent = "Escolhido: " + s.nome;
       }
+
+      if (primeiro) escolherSabor(idxPrimeiro);
 
       function atualizarQtd() {
         var v = document.getElementById("qtd-valor");
@@ -182,10 +192,9 @@
       });
 
       painel.addEventListener("click", function (e) {
-        var alvo = e.target;
-        if (alvo.dataset && alvo.dataset.escolherSabor !== undefined) {
-          selecionarSabor(prod, Number(alvo.dataset.escolherSabor));
-        }
+        var alvo = e.target.closest ? e.target.closest("[data-escolher-sabor]") : e.target;
+        if (!alvo || !alvo.dataset || alvo.dataset.escolherSabor === undefined) return;
+        escolherSabor(Number(alvo.dataset.escolherSabor));
       });
 
       var rel = BANCO_DADOS.produtos.filter(function (p) {
@@ -203,9 +212,14 @@
       var s = prod.sabores[idx];
       if (!s || !s.estoque) return;
       var pilulas = document.getElementById("pilulas-sabor");
-      Array.prototype.forEach.call(pilulas.children, function (b, i) {
+      Array.prototype.forEach.call(pilulas.children, function (b) {
         if (b.dataset && b.dataset.escolherSabor !== undefined) {
-          b.classList.toggle("ativo", i === idx);
+          var marcado = Number(b.dataset.escolherSabor) === idx;
+          b.classList.toggle("ativo", marcado);
+          b.setAttribute("aria-pressed", marcado ? "true" : "false");
+        } else {
+          b.classList.remove("ativo");
+          b.setAttribute("aria-pressed", "false");
         }
       });
       atualizarPreco(prod, s);

@@ -925,6 +925,7 @@ main#conteudo {
   -webkit-backdrop-filter: blur(8px);
           backdrop-filter: blur(8px);
   color: var(--texto);
+  text-decoration: none;
   transition: all 0.2s var(--ease);
 }
 .quick-add:hover {
@@ -1305,6 +1306,15 @@ main#conteudo {
   border-color: transparent;
   color: #05070d;
   box-shadow: 0 8px 24px -10px var(--accent-shadow);
+}
+.sabor-escolhido {
+  display: block;
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: var(--texto-2);
+}
+.sabor-escolhido:empty {
+  display: none;
 }
 .pill.desabilitado {
   opacity: 0.35;
