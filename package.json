@@ -1,5 +1,8 @@
 {
   "private": true,
+  "scripts": {
+    "preview": "node scripts/preview.js"
+  },
   "dependencies": {
     "@vercel/blob": "^2.8.0"
   }

@@ -711,10 +711,11 @@ function autosaveConfig() {
   estado.tagline = get("c-tagline").value.trim() || "";
   estado.contato = get("c-contato").value.trim();
   var novaSenha = get("c-senha").value.trim();
-  if (novaSenha) {
+  if (novaSenha && novaSenha !== estado.senha) {
     estado.senha = novaSenha;
     localStorage.setItem(CHAVE_SENHA, novaSenha);
-    atualizarSenhaRemota(novaSenha);
+    senhaRemotaCache = novaSenha;
+    agendarPushSenha(novaSenha);
   }
   estado.efeitos = {
     fumaca: get("c-fumaca").checked,
@@ -778,29 +779,86 @@ async function buscarSenhaRemota() {
   return null;
 }
 
-async function atualizarSenhaRemota(senha) {
+/* Senha que está na nuvem. Ela é usada como token para autorizar a troca,
+   então precisa ser a senha ATUAL (antes da troca), não a nova.
+   Se o KV ainda estiver vazio, o servidor aceita a senha padrão. */
+var senhaNuvem = null;
+async function tokenDaNuvem() {
+  if (senhaNuvem) return senhaNuvem;
+  var remota = await buscarSenhaRemota();
+  senhaNuvem = remota || SENHA_PADRAO;
+  return senhaNuvem;
+}
+
+async function atualizarSenhaRemota(senhaNova, token) {
   try {
-    await fetch("/api/admin-senha", {
+    const res = await fetch("/api/admin-senha", {
       method: "POST",
-      headers: { "Content-Type": "application/json", "x-admin-token": (estado && estado.senha) || "" },
-      body: JSON.stringify({ senha }),
+      headers: { "Content-Type": "application/json", "x-admin-token": token || "" },
+      body: JSON.stringify({ senha: senhaNova }),
     });
-  } catch (e) {}
+    if (!res.ok) return false;
+    const j = await res.json().catch(function () { return null; });
+    return !!(j && j.ok);
+  } catch (e) {
+    return false;
+  }
+}
+
+/* Agrupa a digitação no campo de senha para não enviar uma troca por letra. */
+var pushSenhaTimer = null;
+function agendarPushSenha(senhaNova) {
+  clearTimeout(pushSenhaTimer);
+  pushSenhaTimer = setTimeout(function () {
+    empurrarSenha(senhaNova);
+  }, 900);
+}
+
+function empurrarSenha(senhaNova, silencioso) {
+  return tokenDaNuvem()
+    .then(function (token) {
+      return atualizarSenhaRemota(senhaNova, token);
+    })
+    .then(function (ok) {
+      if (ok) {
+        senhaNuvem = senhaNova;
+        if (!silencioso) toast("Senha sincronizada na nuvem", "ok");
+      } else if (!silencioso) {
+        toast(
+          "Senha salva aqui, mas não sincronizou na nuvem. Confira a conexão e salve de novo.",
+          "err"
+        );
+      }
+    })
+    .catch(function () {
+      if (!silencioso) toast("Senha salva aqui, mas não sincronizou na nuvem.", "err");
+    });
 }
 
 var senhaRemotaCache = null;
 async function senhaAtual() {
   if (senhaRemotaCache) return senhaRemotaCache;
   var local = (estado && estado.senha) || localStorage.getItem(CHAVE_SENHA);
-  if (local) {
-    senhaRemotaCache = local;
-    return local;
-  }
   var remota = await buscarSenhaRemota();
   if (remota) {
+    /* A nuvem é a fonte da verdade: se este navegador estava com outra
+       senha (antiga ou só local), passa a usar a da nuvem. */
+    if (local !== remota) {
+      try { localStorage.setItem(CHAVE_SENHA, remota); } catch (e) {}
+      if (estado) estado.senha = remota;
+    }
+    senhaNuvem = remota;
     senhaRemotaCache = remota;
     return remota;
   }
+  if (local) {
+    /* Nuvem ainda sem senha: usa a local e envia para a nuvem (uma vez). */
+    senhaRemotaCache = local;
+    senhaNuvem = SENHA_PADRAO;
+    empurrarSenha(local, true);
+    return local;
+  }
+  senhaRemotaCache = SENHA_PADRAO;
   return SENHA_PADRAO;
 }
 
@@ -1673,15 +1731,26 @@ function initPainel() {
   });
 
   /* Trocar senha */
-  get("btn-trocar-senha").addEventListener("click", function () {
+  get("btn-trocar-senha").addEventListener("click", async function () {
     var atual = get("senha-atual").value;
-    var nova = get("senha-nova").value;
-    if (atual !== senhaAtual()) { toast("Senha atual incorreta", "err"); return; }
-    if (nova.trim().length < 4) { toast("A nova senha deve ter ao menos 4 caracteres", "err"); return; }
-    localStorage.setItem(CHAVE_SENHA, nova.trim());
+    var nova = get("senha-nova").value.trim();
+    var senha = await senhaAtual();
+    if (atual !== senha) { toast("Senha atual incorreta", "err"); return; }
+    if (nova.length < 4) { toast("A nova senha deve ter ao menos 4 caracteres", "err"); return; }
+    var token = await tokenDaNuvem();
+    estado.senha = nova;
+    localStorage.setItem(CHAVE_SENHA, nova);
+    try { localStorage.setItem(CHAVE_PAINEL, JSON.stringify(estado)); } catch (e) {}
+    senhaRemotaCache = nova;
     get("senha-atual").value = "";
     get("senha-nova").value = "";
-    toast("Senha alterada com sucesso", "ok");
+    var ok = await atualizarSenhaRemota(nova, token);
+    if (ok) {
+      senhaNuvem = nova;
+      toast("Senha alterada e sincronizada na nuvem", "ok");
+    } else {
+      toast("Senha alterada neste navegador, mas não sincronizou na nuvem", "err");
+    }
   });
 
   /* Produtos: filtros e ações */
