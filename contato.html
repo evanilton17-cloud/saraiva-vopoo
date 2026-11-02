@@ -19,7 +19,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/style.css?v=7">
+  <link rel="stylesheet" href="css/style.css?v=8">
 </head>
 <body>
   <div id="cabecalho"></div>
@@ -32,6 +32,8 @@
 
     <div class="cartao-contato glass" id="cartao-contato"></div>
 
+    <div class="cartao-contato glass horario-card" id="horario-loja"></div>
+
     <div class="aviso-idade" style="margin-top:26px;">
       Venda restrita a maiores de 18 anos. Produtos de uso adulto. Consulte a legislação aplicável antes da compra.
     </div>
@@ -40,8 +42,8 @@
   <div id="rodape"></div>
 
   <script src="js/dados.js?v=3"></script>
-  <script src="js/main.js?v=7"></script>
-  <script src="js/cart.js?v=4"></script>
+  <script src="js/main.js?v=8"></script>
+  <script src="js/cart.js?v=5"></script>
   <script src="js/live.js?v=1"></script>
   <script>
     montarPagina("contato");
@@ -54,6 +56,9 @@
         '<div class="passo"><span class="passo-num">3</span><div><h4>Finalize com seu cupom</h4><p>Toque em "Finalizar pedido", escolha dinheiro, cartão ou Pix, copie o cupom gerado e envie-o para a loja.</p></div></div>' +
         '<a class="btn btn-primario" href="catalogo.html" style="width:100%;">Ver catálogo</a>';
     }
+
+    var horarioEl = document.getElementById("horario-loja");
+    if (horarioEl) horarioEl.innerHTML = horarioLojaHTML();
   </script>
 </body>
 </html>

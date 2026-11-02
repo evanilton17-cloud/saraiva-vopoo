@@ -331,6 +331,15 @@ function atualizarTextoCupom() {
   if (ta) ta.value = montarTextoPedido();
 }
 
+function avisoHorarioHTML() {
+  if (typeof lojaAbertaAgora !== "function" || lojaAbertaAgora()) return "";
+  return (
+    '<p class="cupom-horario">A loja está fechada agora. Seu pedido será respondido a partir das ' +
+    proximaAberturaLoja() +
+    ".</p>"
+  );
+}
+
 function mostrarCupom() {
   var itens = document.getElementById("carrinho-itens");
   var rodape = document.getElementById("carrinho-rodape");
@@ -353,6 +362,7 @@ function mostrarCupom() {
     '<textarea id="cupom-texto" readonly spellcheck="false">' + escapeAttr(montarTextoPedido()) + "</textarea>" +
     "</div>" +
     '<p class="cupom-dica">Toque no cupom para copiar.</p>' +
+    avisoHorarioHTML() +
     '<button class="btn btn-primario" id="cupom-copiar">Copiar cupom</button>' +
     '<button class="btn" id="voltar-carrinho">← Voltar ao pedido</button>';
   if (titulo) titulo.textContent = "Seu cupom de pedido";

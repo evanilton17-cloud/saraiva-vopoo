@@ -272,11 +272,123 @@ function RODAPE_HTML() {
     '<p>© <span id="ano"></span> ' +
     (BANCO_DADOS.nomeMarca || "SARAIVA") +
     ". Todos os direitos reservados.</p>" +
+    '<div class="rodape-horario">' +
+    horarioLojaHTML() +
+    "</div>" +
     '<p class="aviso">Venda proibida para menores de 18 anos. Contém nicotina, substância que causa dependência. Produtos de uso adulto.</p>' +
     '<a class="painel-link" href="/admin" title="Acesso administrativo" aria-label="Acesso administrativo"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg></a>' +
     "</div>" +
     "</div></footer>"
   );
+}
+
+/* ---------- Horário de funcionamento ---------- */
+var HORARIO_LOJA = {
+  fuso: "America/Sao_Paulo",
+  dias: "Todos os dias",
+  faixas: [
+    ["09:00", "12:00"],
+    ["15:00", "22:30"]
+  ]
+};
+
+function minutosDeHora(hhmm) {
+  var p = String(hhmm).split(":");
+  return Number(p[0]) * 60 + Number(p[1]);
+}
+
+function doisDigitos(n) {
+  return (n < 10 ? "0" : "") + n;
+}
+
+/* Hora atual no fuso da loja (não depende do relógio do visitante). */
+function minutosAgoraNaLoja() {
+  try {
+    var partes = new Intl.DateTimeFormat("pt-BR", {
+      timeZone: HORARIO_LOJA.fuso,
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }).formatToParts(new Date());
+    var h = 0;
+    var m = 0;
+    partes.forEach(function (p) {
+      if (p.type === "hour") h = Number(p.value) % 24;
+      if (p.type === "minute") m = Number(p.value);
+    });
+    if (!isNaN(h) && !isNaN(m)) return h * 60 + m;
+  } catch (e) {}
+  var d = new Date();
+  return d.getHours() * 60 + d.getMinutes();
+}
+
+function lojaAbertaAgora() {
+  var agora = minutosAgoraNaLoja();
+  return HORARIO_LOJA.faixas.some(function (f) {
+    return agora >= minutosDeHora(f[0]) && agora < minutosDeHora(f[1]);
+  });
+}
+
+/* Se está fechado, devolve a hora da próxima abertura (hoje ou amanhã). */
+function proximaAberturaLoja() {
+  var agora = minutosAgoraNaLoja();
+  var melhor = null;
+  HORARIO_LOJA.faixas.forEach(function (f) {
+    var inicio = minutosDeHora(f[0]);
+    if (inicio > agora && (melhor === null || inicio < melhor)) melhor = inicio;
+  });
+  if (melhor === null) melhor = minutosDeHora(HORARIO_LOJA.faixas[0][0]);
+  return doisDigitos(Math.floor(melhor / 60)) + ":" + doisDigitos(melhor % 60);
+}
+
+function textoFaixasHorario() {
+  var partes = HORARIO_LOJA.faixas.map(function (f) {
+    return f[0] + "–" + f[1];
+  });
+  if (partes.length < 2) return partes.join("");
+  return partes.slice(0, -1).join(", ") + " e " + partes[partes.length - 1];
+}
+
+function statusLojaHTML() {
+  if (lojaAbertaAgora()) {
+    return '<span class="status-loja aberto" data-status-loja><i></i>Aberto agora</span>';
+  }
+  return (
+    '<span class="status-loja fechado" data-status-loja><i></i>Fechado agora · abre às ' +
+    proximaAberturaLoja() +
+    "</span>"
+  );
+}
+
+function horarioLojaHTML() {
+  return (
+    '<div class="horario-loja" data-horario-loja>' +
+    '<span class="horario-icone" aria-hidden="true">' +
+    '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>' +
+    "</span>" +
+    '<div class="horario-texto">' +
+    '<span class="horario-rotulo">Horário de funcionamento</span>' +
+    '<span class="horario-faixas">' +
+    HORARIO_LOJA.dias +
+    " · " +
+    textoFaixasHorario() +
+    "</span>" +
+    "</div>" +
+    statusLojaHTML() +
+    "</div>"
+  );
+}
+
+/* O selo "Aberto/Fechado" se atualiza sozinho a cada minuto. */
+function atualizarStatusLoja() {
+  var aberto = lojaAbertaAgora();
+  var els = document.querySelectorAll("[data-status-loja]");
+  for (var i = 0; i < els.length; i++) {
+    els[i].className = "status-loja " + (aberto ? "aberto" : "fechado");
+    els[i].innerHTML = aberto
+      ? "<i></i>Aberto agora"
+      : "<i></i>Fechado agora · abre às " + proximaAberturaLoja();
+  }
 }
 
 /* ---------- Camadas de efeito ---------- */
@@ -475,6 +587,9 @@ function montarPagina(pagina) {
   document.getElementById("cabecalho").innerHTML = CABECALHO_HTML(pagina);
   document.getElementById("rodape").innerHTML = RODAPE_HTML();
   document.getElementById("ano").textContent = new Date().getFullYear();
+
+  if (window.__svHorarioTimer) clearInterval(window.__svHorarioTimer);
+  window.__svHorarioTimer = setInterval(atualizarStatusLoja, 60000);
 
   var principal = document.querySelector("main");
   if (principal) principal.classList.add("fade-in");
