@@ -1,5 +1,5 @@
 var BANCO_DADOS = {
-  "atualizadoEm": 1793411397510,
+  "atualizadoEm": 1793646626072,
   "marcas": [
     {
       "slug": "ignite-pod-s",
@@ -7,7 +7,7 @@ var BANCO_DADOS = {
       "categoria": "Pods",
       "cor1": "#22d3ee",
       "cor2": "#0e7490",
-      "imagem": "img/brand-ignite.jpg"
+      "imagem": ""
     },
     {
       "slug": "elfbar-pod-s",
@@ -15,7 +15,7 @@ var BANCO_DADOS = {
       "categoria": "Pods",
       "cor1": "#a855f7",
       "cor2": "#7e22ce",
-      "imagem": "img/brand-elfbar-duke.jpg"
+      "imagem": ""
     },
     {
       "slug": "life-pod-s",
@@ -23,7 +23,7 @@ var BANCO_DADOS = {
       "categoria": "Pods",
       "cor1": "#3b82f6",
       "cor2": "#1e3a8a",
-      "imagem": "img/brand-life-pod-10k-kite.jpg"
+      "imagem": ""
     },
     {
       "slug": "black-cheep-pod-s",
@@ -31,7 +31,7 @@ var BANCO_DADOS = {
       "categoria": "Pods",
       "cor1": "#22d3ee",
       "cor2": "#0e7490",
-      "imagem": "img/brand-the-black-sheep-30k.jpg"
+      "imagem": ""
     },
     {
       "slug": "spaceman",

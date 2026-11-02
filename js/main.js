@@ -1,27 +1,6 @@
 /* Marca d'água das fotos locais: troca o cache antigo (antes era 1 ano imutável). */
 var SV_VERSAO_IMG = "20261102";
 
-/* Alguns nomes de marca na nuvem são diferentes do dados.js. */
-var SV_APELIDOS_MARCA = {
-  ignitepods: "ignite",
-  elfbarpods: "elfbar",
-  lifepods: "lifepod",
-  blackcheeppods: "blacksheep",
-  nikbarpods: "nikbar",
-  blvkpod: "blvk",
-  oxbarpods: "oxbar",
-  dinnerpods: "dinner",
-  reabbeats: "realbeatsbyelfbar"
-};
-
-function normalizarNome(t) {
-  return String(t == null ? "" : t)
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]/g, "");
-}
-
 function comVersaoImagem(url) {
   if (!url) return "";
   if (/^(https?:)?\/\//.test(url) || url.indexOf("data:") === 0) return url;
@@ -29,58 +8,9 @@ function comVersaoImagem(url) {
   return url + "?v=" + SV_VERSAO_IMG;
 }
 
-/* A nuvem guarda só textos; as fotos de marca continuam no dados.js.
-   Sem completar aqui, o card mostra a foto no primeiro paint e perde a
-   foto quando o live.js recarrega o catálogo da nuvem (foto "sumindo"). */
-function mesclarCatalogo(remoto, locais) {
-  if (!remoto || !Array.isArray(remoto.marcas) || !Array.isArray(remoto.produtos)) {
-    return remoto;
-  }
-  var snap = locais && Array.isArray(locais.marcas) ? locais : { marcas: [], produtos: [] };
-  var fotosMarca = {};
-  var i;
-  for (i = 0; i < snap.marcas.length; i++) {
-    var lm = snap.marcas[i];
-    if (!lm || !lm.imagem) continue;
-    fotosMarca[normalizarNome(lm.nome)] = lm.imagem;
-  }
-  for (i = 0; i < remoto.marcas.length; i++) {
-    var m = remoto.marcas[i];
-    if (!m || m.imagem) continue;
-    var chave = normalizarNome(m.nome);
-    var alvo = SV_APELIDOS_MARCA[chave] || "";
-    var foto = alvo && fotosMarca[alvo] ? fotosMarca[alvo] : "";
-    if (!foto) {
-      var melhor = "";
-      for (var k in fotosMarca) {
-        if (chave.indexOf(k) === 0 || k.indexOf(chave) === 0) {
-          if (k.length > melhor.length) melhor = k;
-        }
-      }
-      if (melhor) foto = fotosMarca[melhor];
-    }
-    if (foto) m.imagem = comVersaoImagem(foto);
-  }
-
-  var fotosProduto = {};
-  for (i = 0; i < snap.produtos.length; i++) {
-    var lp = snap.produtos[i];
-    if (!lp || !lp.imagem) continue;
-    fotosProduto[normalizarNome(lp.nome)] = lp.imagem;
-  }
-  for (i = 0; i < remoto.produtos.length; i++) {
-    var p = remoto.produtos[i];
-    if (!p || p.imagem) continue;
-    var fp = fotosProduto[normalizarNome(p.nome)];
-    if (fp) p.imagem = comVersaoImagem(fp);
-  }
-  return remoto;
-}
-
-/* No site público, toda foto local ganha uma versão para furar o cache
-   antigo de 1 ano. No painel fica desligado para não gravar "?v=" nos
-   campos de imagem do catálogo. */
-(function versionarImagensPublicas() {
+/* A nuvem é a fonte da verdade. Não completar fotos a partir do dados.js:
+   senão uma imagem removida no painel voltaria a aparecer no site. */
+function versionarImagensDoCatalogo() {
   try {
     if (document.body && document.body.classList.contains("admin")) return;
     var listas = [BANCO_DADOS.marcas, BANCO_DADOS.produtos];
@@ -93,11 +23,10 @@ function mesclarCatalogo(remoto, locais) {
       }
     }
   } catch (e) {}
-})();
+}
 
 (function aplicarCatalogo() {
   try {
-    var locais = BANCO_DADOS;
     var cache = null;
     try { cache = JSON.parse(localStorage.getItem("sv_cat_cache") || "null"); } catch (e) {}
     if (!cache) {
@@ -111,9 +40,11 @@ function mesclarCatalogo(remoto, locais) {
       if (typeof p.cor1 !== "string") p.cor1 = "#22d3ee";
       if (typeof p.cor2 !== "string") p.cor2 = "#0e7490";
     }
-    BANCO_DADOS = mesclarCatalogo(cache, locais);
+    BANCO_DADOS = cache;
   } catch (e) {}
 })();
+
+versionarImagensDoCatalogo();
 
 function formatarPreco(v) {
   var n = Math.round(v * 100) / 100;
