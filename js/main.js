@@ -77,6 +77,24 @@ function mesclarCatalogo(remoto, locais) {
   return remoto;
 }
 
+/* No site público, toda foto local ganha uma versão para furar o cache
+   antigo de 1 ano. No painel fica desligado para não gravar "?v=" nos
+   campos de imagem do catálogo. */
+(function versionarImagensPublicas() {
+  try {
+    if (document.body && document.body.classList.contains("admin")) return;
+    var listas = [BANCO_DADOS.marcas, BANCO_DADOS.produtos];
+    for (var l = 0; l < listas.length; l++) {
+      var lista = listas[l];
+      if (!Array.isArray(lista)) continue;
+      for (var i = 0; i < lista.length; i++) {
+        var item = lista[i];
+        if (item && item.imagem) item.imagem = comVersaoImagem(item.imagem);
+      }
+    }
+  } catch (e) {}
+})();
+
 (function aplicarCatalogo() {
   try {
     var locais = BANCO_DADOS;
