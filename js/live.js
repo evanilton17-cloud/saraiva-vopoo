@@ -8,7 +8,7 @@
   function texto(c) {
     return (c.atualizadoEm || "") + "|" + c.marcas.length + "m" + c.produtos.length + "p";
   }
-  fetch("api/catalogo")
+  fetch("api/catalogo", { cache: "no-store" })
     .then(function (r) { return r.json(); })
     .then(function (j) {
       var c = j && j.ok ? j.catalogo : null;

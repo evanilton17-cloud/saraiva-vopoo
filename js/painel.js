@@ -1275,7 +1275,7 @@ function aplicCat(novoCatalogo) {
 }
 
 function sincronizarCatalogo() {
-  fetch("api/catalogo")
+  fetch("api/catalogo", { cache: "no-store" })
     .then(function (r) { return r.json(); })
     .then(function (j) {
       var srv = j && j.ok ? j.catalogo : null;
