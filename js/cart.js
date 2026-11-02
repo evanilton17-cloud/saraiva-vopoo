@@ -133,14 +133,49 @@ function fecharCarrinho() {
 
 var cupomCorrente = null;
 var pagamentoCorrente = "";
+var entregaCorrente = "Entrega";
+var textoCupomCorrente = "";
+var pedidoRegistrado = false;
+var finalizando = false;
+var nomeSalvo = "";
+
+function carregarNomeCliente() {
+  try {
+    nomeSalvo = localStorage.getItem("sv_cliente_nome") || "";
+  } catch (e) {
+    nomeSalvo = "";
+  }
+}
+
+function cupomJaExiste(codigo) {
+  try {
+    var vendas = JSON.parse(localStorage.getItem("sv_vendas")) || [];
+    return Array.isArray(vendas) && vendas.some(function (v) {
+      return v && v.ncupom === codigo;
+    });
+  } catch (e) {
+    return false;
+  }
+}
 
 function codigoPedido() {
   var d = new Date();
-  return "SV" + String(d.getDate()).padStart(2, "0") + String(d.getMonth() + 1).padStart(2, "0") + "-" + Math.floor(100 + Math.random() * 900);
+  var base = "SV" + String(d.getDate()).padStart(2, "0") + String(d.getMonth() + 1).padStart(2, "0") + "-";
+  var alfabeto = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  for (var tentativa = 0; tentativa < 20; tentativa++) {
+    var sufixo = "";
+    for (var i = 0; i < 4; i++) {
+      sufixo += alfabeto.charAt(Math.floor(Math.random() * alfabeto.length));
+    }
+    var codigo = base + sufixo;
+    if (!cupomJaExiste(codigo)) return codigo;
+  }
+  return base + Date.now().toString(36).toUpperCase().slice(-5);
 }
 
 function montarTextoPedido() {
   if (!cupomCorrente) cupomCorrente = codigoPedido();
+  if (pedidoRegistrado && textoCupomCorrente) return textoCupomCorrente;
   var todo = carrinho
     .map(function (item) {
       return (
@@ -156,17 +191,23 @@ function montarTextoPedido() {
     todo +
     "\n\nTotal: " +
     formatarPreco(totalPreco()) +
-    (campos.entrega ? "\nEntrega: " + campos.entrega : "") +
+    "\n" + campos.linha +
     (pagamentoCorrente ? "\nPagamento: " + pagamentoCorrente : "");
   return texto;
 }
 
 function campoEntrega() {
   var nomeEl = document.getElementById("cliente-nome");
-  var entregaEl = document.getElementById("cliente-entrega");
+  var endEl = document.getElementById("cliente-endereco");
+  var nome = nomeEl ? nomeEl.value.trim() : nomeSalvo;
+  var endereco = endEl ? endEl.value.trim() : "";
+  var retirada = entregaCorrente === "Retirada";
   return {
-    nome: (nomeEl && nomeEl.value.trim()) || "",
-    entrega: entregaEl ? entregaEl.value : ""
+    nome: nome,
+    tipo: entregaCorrente,
+    endereco: retirada ? "" : endereco,
+    detalhe: retirada ? "Retirada na loja" : endereco,
+    linha: retirada ? "Retirada: na loja" : "Entrega: " + endereco
   };
 }
 
@@ -207,6 +248,30 @@ function celulaItem(item) {
   );
 }
 
+function botaoPagamento(pg) {
+  return (
+    '<button class="pagto-btn' +
+    (pagamentoCorrente === pg ? " sel" : "") +
+    '" data-pag="' +
+    pg +
+    '" type="button">' +
+    pg +
+    "</button>"
+  );
+}
+
+function botaoEntrega(tipo) {
+  return (
+    '<button class="pagto-btn' +
+    (entregaCorrente === tipo ? " sel" : "") +
+    '" data-entrega="' +
+    tipo +
+    '" type="button">' +
+    (tipo === "Retirada" ? "Retirada" : "Entrega") +
+    "</button>"
+  );
+}
+
 function renderizarCarrinho() {
   var itens = document.getElementById("carrinho-itens");
   var rodape = document.getElementById("carrinho-rodape");
@@ -232,21 +297,69 @@ function renderizarCarrinho() {
     '<input type="text" id="cliente-nome" placeholder="Como podemos te chamar?" maxlength="60" value="' +
     escapeAttr(cliente.nome) +
     '"></div>' +
-    '<div class="campo"><label for="cliente-entrega">Entrega</label>' +
-    '<select id="cliente-entrega"><option value="Entrega (combinar taxa)"' +
-    (cliente.entrega === "Entrega (combinar taxa)" ? " selected" : "") +
-    ">Entrega (combinar taxa)</option></select></div>" +
+    '<div class="campo"><label>Como receber</label>' +
+    '<div class="pagto-opcoes duas" id="entrega-opcoes">' +
+    botaoEntrega("Entrega") +
+    botaoEntrega("Retirada") +
+    "</div></div>" +
+    '<div class="campo" id="campo-endereco"' +
+    (entregaCorrente === "Retirada" ? " hidden" : "") +
+    '><label for="cliente-endereco">Endereço de entrega</label>' +
+    '<input type="text" id="cliente-endereco" placeholder="Rua, número, bairro" maxlength="120" value="' +
+    escapeAttr(cliente.endereco) +
+    '"></div>' +
+    '<div class="campo"><label>Pagamento</label>' +
+    '<div class="pagto-opcoes" id="pagamento-opcoes">' +
+    botaoPagamento("Dinheiro") +
+    botaoPagamento("Cartão") +
+    botaoPagamento("Pix") +
+    "</div></div>" +
     '<div class="total-linha"><span>Total</span><strong>' +
     formatarPreco(totalPreco()) +
     "</strong></div>" +
     '<button class="btn btn-primario" id="carrinho-chekout">Finalizar pedido</button>';
 }
 
-function copiarCupom() {
-  if (!pagamentoCorrente) {
-    mostrarToast("<b>Escolha a forma de pagamento</b><br>Dinheiro, cartão ou Pix.");
+function finalizarPedido() {
+  if (finalizando || !carrinho.length) return;
+  var campos = campoEntrega();
+  if (!campos.nome) {
+    var nomeEl = document.getElementById("cliente-nome");
+    if (nomeEl) nomeEl.focus();
+    mostrarToast("<b>Falta seu nome</b><br>Preencha para finalizar o pedido.");
     return;
   }
+  if (!pagamentoCorrente) {
+    mostrarToast("<b>Escolha o pagamento</b><br>Dinheiro, cartão ou Pix.");
+    return;
+  }
+  if (entregaCorrente === "Entrega" && !campos.endereco) {
+    var endEl = document.getElementById("cliente-endereco");
+    if (endEl) endEl.focus();
+    mostrarToast("<b>Falta o endereço</b><br>Rua, número e bairro para a entrega.");
+    return;
+  }
+  if (!cupomCorrente) cupomCorrente = codigoPedido();
+
+  nomeSalvo = campos.nome;
+  try { localStorage.setItem("sv_cliente_nome", nomeSalvo); } catch (e) {}
+
+  finalizando = true;
+  if (!registrarVendaAuto()) {
+    finalizando = false;
+    mostrarToast("<b>Não deu para registrar</b><br>Tente novamente em instantes.");
+    return;
+  }
+  textoCupomCorrente = montarTextoPedido();
+  pedidoRegistrado = true;
+  carrinho = [];
+  salvarCarrinho();
+  mostrarCupom();
+  finalizando = false;
+  mostrarToast("<b>Pedido registrado ✓</b><br>Copie o cupom e envie para a loja.");
+}
+
+function copiarCupom() {
   var ta = document.getElementById("cupom-texto");
   if (!ta) return;
   var feito = false;
@@ -266,20 +379,14 @@ function copiarCupom() {
     } catch (e) {}
   }
   if (feito) {
-    var registrada = registrarVendaAuto();
-    if (registrada) limparCarrinho();
-    mostrarToast(
-      registrada
-        ? "<b>Cupom copiado ✓</b><br>Pedido registrado na loja."
-        : "<b>Cupom copiado ✓</b><br>Cole na conversa da loja para confirmar."
-    );
+    mostrarToast("<b>Cupom copiado ✓</b><br>Cole na conversa da loja para confirmar.");
   }
 }
-
 function registrarVendaAuto() {
   if (!cupomCorrente || !carrinho.length || !pagamentoCorrente) return false;
   var agora = new Date();
   var campos = campoEntrega();
+  if (!campos.nome) return false;
   var v = {
     id: "v-" + agora.getTime().toString(36) + "-" + Math.floor(Math.random() * 9999).toString(36),
     data: agora.getFullYear() + "-" + String(agora.getMonth() + 1).padStart(2, "0") + "-" + String(agora.getDate()).padStart(2, "0"),
@@ -291,7 +398,8 @@ function registrarVendaAuto() {
     }),
     total: totalPreco(),
     pagamento: pagamentoCorrente,
-    entrega: campos.entrega
+    entrega: campos.detalhe,
+    endereco: campos.endereco
   };
   var vendas = [];
   try {
@@ -300,13 +408,11 @@ function registrarVendaAuto() {
     vendas = [];
   }
   if (!Array.isArray(vendas)) vendas = [];
-  if (vendas.some(function (x) { return x.ncupom && x.ncupom === v.ncupom; })) return false;
+  if (vendas.some(function (x) { return x.ncupom && x.ncupom === v.ncupom; })) return true;
   vendas.push(v);
   try {
     localStorage.setItem("sv_vendas", JSON.stringify(vendas));
-  } catch (e) {
-    return false;
-  }
+  } catch (e) {}
   enviarVendaServidor(v);
   return true;
 }
@@ -314,21 +420,34 @@ function registrarVendaAuto() {
 function limparCarrinho() {
   cupomCorrente = null;
   pagamentoCorrente = "";
+  textoCupomCorrente = "";
+  pedidoRegistrado = false;
   carrinho = [];
   salvarCarrinho();
 }
 
 function escolherPagamento(pg) {
   pagamentoCorrente = pg;
-  document.querySelectorAll(".pagto-btn").forEach(function (b) {
+  document.querySelectorAll(".pagto-btn[data-pag]").forEach(function (b) {
     b.classList.toggle("sel", b.dataset.pag === pg);
   });
   atualizarTextoCupom();
 }
 
+function escolherEntrega(tipo) {
+  var nomeEl = document.getElementById("cliente-nome");
+  if (nomeEl) nomeSalvo = nomeEl.value.trim();
+  entregaCorrente = tipo === "Retirada" ? "Retirada" : "Entrega";
+  renderizarCarrinho();
+  if (entregaCorrente === "Entrega") {
+    var endEl = document.getElementById("cliente-endereco");
+    if (endEl) endEl.focus();
+  }
+}
+
 function atualizarTextoCupom() {
   var ta = document.getElementById("cupom-texto");
-  if (ta) ta.value = montarTextoPedido();
+  if (ta && !pedidoRegistrado) ta.value = montarTextoPedido();
 }
 
 function avisoHorarioHTML() {
@@ -352,25 +471,17 @@ function mostrarCupom() {
   cupom.hidden = false;
   cupom.innerHTML =
     '<div class="cupom-num">' + cupomCorrente + "</div>" +
-    '<div class="cupom-pagto"><span class="cupom-pagto-label">Como vai pagar?</span>' +
-    '<div class="pagto-opcoes">' +
-    '<button class="pagto-btn" data-pag="Dinheiro" type="button">Dinheiro</button>' +
-    '<button class="pagto-btn" data-pag="Cartão" type="button">Cartão</button>' +
-    '<button class="pagto-btn" data-pag="Pix" type="button">Pix</button>' +
-    "</div></div>" +
     '<div class="cupom-box" id="cupom-box" title="Clique para copiar">' +
     '<textarea id="cupom-texto" readonly spellcheck="false">' + escapeAttr(montarTextoPedido()) + "</textarea>" +
     "</div>" +
     '<p class="cupom-dica">Toque no cupom para copiar.</p>' +
     avisoHorarioHTML() +
     '<button class="btn btn-primario" id="cupom-copiar">Copiar cupom</button>' +
-    '<button class="btn" id="voltar-carrinho">← Voltar ao pedido</button>';
+    '<button class="btn" id="fechar-cupom">Fechar</button>';
   if (titulo) titulo.textContent = "Seu cupom de pedido";
 }
 
-function voltarAoCarrinho() {
-  cupomCorrente = null;
-  pagamentoCorrente = "";
+function resetarCupom() {
   var itens = document.getElementById("carrinho-itens");
   var rodape = document.getElementById("carrinho-rodape");
   var cupom = document.getElementById("carrinho-cupom");
@@ -379,11 +490,18 @@ function voltarAoCarrinho() {
   if (itens) itens.style.display = "";
   if (rodape) rodape.style.display = "";
   if (titulo) titulo.textContent = "Seu pedido";
+}
+
+function fecharCupom() {
+  limparCarrinho();
+  resetarCupom();
   renderizarCarrinho();
+  fecharCarrinho();
 }
 
 function initCarrinho() {
   carregarCarrinho();
+  carregarNomeCliente();
 
   var overlay = document.createElement("div");
   overlay.id = "carrinho-overlay";
@@ -425,27 +543,36 @@ function initCarrinho() {
       return;
     }
     if (el.id === "carrinho-chekout") {
-      var cliente = campoEntrega();
-      if (!cliente.nome) {
-        var nomeEl = document.getElementById("cliente-nome");
-        if (nomeEl) nomeEl.focus();
-        mostrarToast("<b>Falta seu nome</b><br>Preencha para finalizar o pedido.");
-        return;
-      }
-      mostrarCupom();
+      finalizarPedido();
       return;
     }
     if (el.dataset && el.dataset.pag) {
       escolherPagamento(el.dataset.pag);
       return;
     }
+    if (el.dataset && el.dataset.entrega) {
+      escolherEntrega(el.dataset.entrega);
+      return;
+    }
     if (el.id === "cupom-copiar" || el.id === "cupom-box") {
       copiarCupom();
       return;
     }
-    if (el.id === "voltar-carrinho") {
-      voltarAoCarrinho();
+    if (el.id === "fechar-cupom") {
+      fecharCupom();
       return;
+    }
+  });
+
+  document.addEventListener("input", function (e) {
+    var el = e.target;
+    if (!el || !el.id) return;
+    if (el.id === "cliente-nome") {
+      nomeSalvo = el.value.trim();
+      try { localStorage.setItem("sv_cliente_nome", el.value); } catch (err) {}
+    }
+    if (el.id === "cliente-endereco") {
+      atualizarTextoCupom();
     }
   });
 

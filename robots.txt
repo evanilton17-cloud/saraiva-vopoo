@@ -1,4 +1,2 @@
 ﻿User-agent: *
-Allow: /
-Disallow: /admin.html
-Sitemap: https://saraiva-vopoo.vercel.app/sitemap.xml
+Disallow: /

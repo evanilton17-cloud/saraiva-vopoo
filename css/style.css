@@ -1858,12 +1858,17 @@ body.tem-barra {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  max-height: 78vh;
+  overflow-y: auto;
 }
 
 .campo {
   display: flex;
   flex-direction: column;
   gap: 6px;
+}
+.campo[hidden] {
+  display: none;
 }
 .campo label {
   color: var(--texto-3);
@@ -1937,6 +1942,9 @@ body.tem-barra {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+}
+.pagto-opcoes.duas {
+  grid-template-columns: 1fr 1fr;
 }
 .pagto-btn {
   height: 40px;
