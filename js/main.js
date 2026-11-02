@@ -1,19 +1,99 @@
-(function aplicarPainel() {
+/* Marca d'água das fotos locais: troca o cache antigo (antes era 1 ano imutável). */
+var SV_VERSAO_IMG = "20261102";
+
+/* Alguns nomes de marca na nuvem são diferentes do dados.js. */
+var SV_APELIDOS_MARCA = {
+  ignitepods: "ignite",
+  elfbarpods: "elfbar",
+  lifepods: "lifepod",
+  blackcheeppods: "blacksheep",
+  nikbarpods: "nikbar",
+  blvkpod: "blvk",
+  oxbarpods: "oxbar",
+  dinnerpods: "dinner",
+  reabbeats: "realbeatsbyelfbar"
+};
+
+function normalizarNome(t) {
+  return String(t == null ? "" : t)
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]/g, "");
+}
+
+function comVersaoImagem(url) {
+  if (!url) return "";
+  if (/^(https?:)?\/\//.test(url) || url.indexOf("data:") === 0) return url;
+  if (url.indexOf("?") !== -1) return url;
+  return url + "?v=" + SV_VERSAO_IMG;
+}
+
+/* A nuvem guarda só textos; as fotos de marca continuam no dados.js.
+   Sem completar aqui, o card mostra a foto no primeiro paint e perde a
+   foto quando o live.js recarrega o catálogo da nuvem (foto "sumindo"). */
+function mesclarCatalogo(remoto, locais) {
+  if (!remoto || !Array.isArray(remoto.marcas) || !Array.isArray(remoto.produtos)) {
+    return remoto;
+  }
+  var snap = locais && Array.isArray(locais.marcas) ? locais : { marcas: [], produtos: [] };
+  var fotosMarca = {};
+  var i;
+  for (i = 0; i < snap.marcas.length; i++) {
+    var lm = snap.marcas[i];
+    if (!lm || !lm.imagem) continue;
+    fotosMarca[normalizarNome(lm.nome)] = lm.imagem;
+  }
+  for (i = 0; i < remoto.marcas.length; i++) {
+    var m = remoto.marcas[i];
+    if (!m || m.imagem) continue;
+    var chave = normalizarNome(m.nome);
+    var alvo = SV_APELIDOS_MARCA[chave] || "";
+    var foto = alvo && fotosMarca[alvo] ? fotosMarca[alvo] : "";
+    if (!foto) {
+      var melhor = "";
+      for (var k in fotosMarca) {
+        if (chave.indexOf(k) === 0 || k.indexOf(chave) === 0) {
+          if (k.length > melhor.length) melhor = k;
+        }
+      }
+      if (melhor) foto = fotosMarca[melhor];
+    }
+    if (foto) m.imagem = comVersaoImagem(foto);
+  }
+
+  var fotosProduto = {};
+  for (i = 0; i < snap.produtos.length; i++) {
+    var lp = snap.produtos[i];
+    if (!lp || !lp.imagem) continue;
+    fotosProduto[normalizarNome(lp.nome)] = lp.imagem;
+  }
+  for (i = 0; i < remoto.produtos.length; i++) {
+    var p = remoto.produtos[i];
+    if (!p || p.imagem) continue;
+    var fp = fotosProduto[normalizarNome(p.nome)];
+    if (fp) p.imagem = comVersaoImagem(fp);
+  }
+  return remoto;
+}
+
+(function aplicarCatalogo() {
   try {
+    var locais = BANCO_DADOS;
     var cache = null;
-    try { cache = JSON.parse(sessionStorage.getItem("sv_cat_cache") || "null"); } catch (e) {}
-    var guardado = cache && typeof cache === "object"
-      ? cache
-      : JSON.parse(localStorage.getItem("sv_painel") || "null");
-    if (!guardado || typeof guardado !== "object") return;
-    if (!Array.isArray(guardado.marcas) || !Array.isArray(guardado.produtos)) return;
-    for (var i = 0; i < guardado.produtos.length; i++) {
-      var p = guardado.produtos[i];
+    try { cache = JSON.parse(localStorage.getItem("sv_cat_cache") || "null"); } catch (e) {}
+    if (!cache) {
+      try { cache = JSON.parse(sessionStorage.getItem("sv_cat_cache") || "null"); } catch (e) {}
+    }
+    if (!cache || typeof cache !== "object") return;
+    if (!Array.isArray(cache.marcas) || !Array.isArray(cache.produtos)) return;
+    for (var i = 0; i < cache.produtos.length; i++) {
+      var p = cache.produtos[i];
       if (!p || !p.id || !p.slug || !Array.isArray(p.sabores)) return;
       if (typeof p.cor1 !== "string") p.cor1 = "#22d3ee";
       if (typeof p.cor2 !== "string") p.cor2 = "#0e7490";
     }
-    BANCO_DADOS = guardado;
+    BANCO_DADOS = mesclarCatalogo(cache, locais);
   } catch (e) {}
 })();
 

@@ -50,9 +50,9 @@
   <div id="rodape"></div>
 
   <script src="js/dados.js?v=3"></script>
-  <script src="js/main.js?v=9"></script>
+  <script src="js/main.js?v=10"></script>
   <script src="js/cart.js?v=5"></script>
-  <script src="js/live.js?v=1"></script>
+  <script src="js/live.js?v=2"></script>
   <script>
     montarPagina("pods");
 
@@ -74,11 +74,14 @@
         var el = document.querySelector(sel);
         if (el && content) el.setAttribute("content", content);
       }
-      var imgAbs = (prod.imagem || (marca && marca.imagem) || "img/pag1.png").replace(/^\.?\//, "");
+      var imgAbs = (prod.imagem || (marca && marca.imagem) || "img/hero.jpg").replace(/^\.?\//, "");
+      var imgUrl = /^https?:\/\//.test(imgAbs)
+        ? imgAbs
+        : "https://saraiva-vopoo.vercel.app/" + imgAbs;
       setMeta('meta[property="og:title"]', prod.nome + " — Saraiva");
       setMeta('meta[name="description"]', "Confira o " + prod.nome + " da Saraiva: sabores, puffs e preço. Venda proibida para menores de 18 anos.");
       setMeta('meta[property="og:description"]', "Confira o " + prod.nome + " da Saraiva: sabores, puffs e preço.");
-      setMeta('meta[property="og:image"]', "https://saraiva-vopoo.vercel.app/" + imgAbs);
+      setMeta('meta[property="og:image"]', imgUrl);
       setMeta('meta[property="og:url"]', "https://saraiva-vopoo.vercel.app/produto.html?produto=" + encodeURIComponent(prod.slug));
 
       document.getElementById("zoom-grad").innerHTML = "";

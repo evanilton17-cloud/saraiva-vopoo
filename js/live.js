@@ -14,6 +14,7 @@
       var c = j && j.ok ? j.catalogo : null;
       if (!ehValido(c)) return;
       var t = texto(c);
+      try { localStorage.setItem("sv_cat_cache", JSON.stringify(c)); } catch (e) {}
       try { sessionStorage.setItem("sv_cat_cache", JSON.stringify(c)); } catch (e) {}
       var base = BANCO_DADOS && ehValido(BANCO_DADOS) ? BANCO_DADOS : null;
       var jaTem = base && texto(base) === t;
