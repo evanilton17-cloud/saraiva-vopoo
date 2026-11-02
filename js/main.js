@@ -245,8 +245,11 @@ function NAV_HTML(pagina) {
 }
 
 function CABECALHO_HTML(pagina) {
+  var barra = pagina === "marcas" ? barraHorarioHTML() : "";
   return (
-    '<header class="cabecalho"><div class="container cabecalho-topo">' +
+    '<header class="cabecalho">' +
+    barra +
+    '<div class="container cabecalho-topo">' +
     '<a class="logo" href="index.html"><b>' +
     (BANCO_DADOS.nomeMarca || "SARAIVA") +
     "</b></a>" +
@@ -379,6 +382,46 @@ function horarioLojaHTML() {
   );
 }
 
+/* Barrinha de horário que corre no topo da home (fica dentro do cabeçalho). */
+function barraHorarioHTML() {
+  var aberto = lojaAbertaAgora();
+  var status = aberto
+    ? "Aberto agora"
+    : "Fechado · abre às " + proximaAberturaLoja();
+  var item =
+    '<span class="barra-item">' +
+    '<i class="barra-dot"></i>' +
+    "<b data-barra-status>" +
+    status +
+    "</b>" +
+    '<span class="barra-sep">•</span>' +
+    "<span>" +
+    HORARIO_LOJA.dias +
+    "</span>" +
+    '<span class="barra-sep">•</span>' +
+    "<span>" +
+    textoFaixasHorario() +
+    "</span>" +
+    "</span>";
+  var grupo = '<div class="barra-grupo">' + item + item + item + item + "</div>";
+  return (
+    '<div class="barra-horario ' +
+    (aberto ? "aberto" : "fechado") +
+    '" data-barra-horario role="status" aria-label="Horário de funcionamento: ' +
+    HORARIO_LOJA.dias +
+    ", " +
+    textoFaixasHorario() +
+    ". " +
+    status +
+    '.">' +
+    '<div class="barra-trilha" aria-hidden="true">' +
+    grupo +
+    grupo +
+    "</div>" +
+    "</div>"
+  );
+}
+
 /* O selo "Aberto/Fechado" se atualiza sozinho a cada minuto. */
 function atualizarStatusLoja() {
   var aberto = lojaAbertaAgora();
@@ -388,6 +431,17 @@ function atualizarStatusLoja() {
     els[i].innerHTML = aberto
       ? "<i></i>Aberto agora"
       : "<i></i>Fechado agora · abre às " + proximaAberturaLoja();
+  }
+
+  var barra = document.querySelector("[data-barra-horario]");
+  if (barra) {
+    barra.className = "barra-horario " + (aberto ? "aberto" : "fechado");
+    var rotulos = barra.querySelectorAll("[data-barra-status]");
+    for (var k = 0; k < rotulos.length; k++) {
+      rotulos[k].textContent = aberto
+        ? "Aberto agora"
+        : "Fechado · abre às " + proximaAberturaLoja();
+    }
   }
 }
 
@@ -584,6 +638,7 @@ function montarPagina(pagina) {
   montarCanvasFumaca();
   efeitoCursorFumo();
 
+  document.body.classList.toggle("tem-barra", pagina === "marcas");
   document.getElementById("cabecalho").innerHTML = CABECALHO_HTML(pagina);
   document.getElementById("rodape").innerHTML = RODAPE_HTML();
   document.getElementById("ano").textContent = new Date().getFullYear();
