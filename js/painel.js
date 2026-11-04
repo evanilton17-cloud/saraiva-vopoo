@@ -1431,7 +1431,7 @@ function abrirRegistrarVenda() {
     '<div class="a-modal-head"><h3>Registrar venda (colar cupom)</h3><button class="a-modal-x" id="mod-fechar" type="button">✕</button></div>' +
     '<div class="a-modal-body">' +
     '<p style="font-size:13px;color:var(--a-muted);line-height:1.7;margin-bottom:12px;">' +
-    "Cole aqui o cupom que o cliente enviou para a loja. O painel identifica automaticamente os itens, o total, a retirada e o pagamento.</p>" +
+    "Cole aqui o cupom que o cliente enviou para a loja. O painel identifica automaticamente os itens, o total, a entrega e o pagamento.</p>" +
     '<div class="a-field"><label>Cupom recebido</label>' +
     '<textarea class="a-textarea" id="v-cupom" style="min-height:200px;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:13px;" placeholder="Olá! 👋 Quero finalizar meu pedido:&#10;Pedido: SV2209-123&#10;Nome: Maria&#10;• Ignite V80 — Menta — 2x — R$ 129,90&#10;&#10;Total: R$ 129,90&#10;Entrega: Entrega (combinar taxa)&#10;Pagamento: Pix"></textarea></div>' +
     '<div id="v-previa"></div>' +

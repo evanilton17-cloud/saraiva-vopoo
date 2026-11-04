@@ -201,13 +201,13 @@ function campoEntrega() {
   var endEl = document.getElementById("cliente-endereco");
   var nome = nomeEl ? nomeEl.value.trim() : nomeSalvo;
   var endereco = endEl ? endEl.value.trim() : "";
-  var retirada = entregaCorrente === "Retirada";
+  entregaCorrente = "Entrega";
   return {
     nome: nome,
-    tipo: entregaCorrente,
-    endereco: retirada ? "" : endereco,
-    detalhe: retirada ? "Retirada na loja" : endereco,
-    linha: retirada ? "Retirada: na loja" : "Entrega: " + endereco
+    tipo: "Entrega",
+    endereco: endereco,
+    detalhe: endereco,
+    linha: "Entrega: " + endereco
   };
 }
 
@@ -297,14 +297,10 @@ function renderizarCarrinho() {
     '<input type="text" id="cliente-nome" placeholder="Como podemos te chamar?" maxlength="60" value="' +
     escapeAttr(cliente.nome) +
     '"></div>' +
-    '<div class="campo"><label>Como receber</label>' +
-    '<div class="pagto-opcoes duas" id="entrega-opcoes">' +
-    botaoEntrega("Entrega") +
-    botaoEntrega("Retirada") +
-    "</div></div>" +
-    '<div class="campo" id="campo-endereco"' +
-    (entregaCorrente === "Retirada" ? " hidden" : "") +
-    '><label for="cliente-endereco">Endereço de entrega</label>' +
+    '<div class="campo"><label>Entrega</label>' +
+    '<p style="font-size:13px;color:var(--muted, #888);margin:0 0 8px;">Entrega a combinar (taxa conforme região).</p></div>' +
+    '<div class="campo" id="campo-endereco">' +
+    '<label for="cliente-endereco">Endereço de entrega</label>' +
     '<input type="text" id="cliente-endereco" placeholder="Rua, número, bairro" maxlength="120" value="' +
     escapeAttr(cliente.endereco) +
     '"></div>' +
@@ -437,12 +433,10 @@ function escolherPagamento(pg) {
 function escolherEntrega(tipo) {
   var nomeEl = document.getElementById("cliente-nome");
   if (nomeEl) nomeSalvo = nomeEl.value.trim();
-  entregaCorrente = tipo === "Retirada" ? "Retirada" : "Entrega";
+  entregaCorrente = "Entrega";
   renderizarCarrinho();
-  if (entregaCorrente === "Entrega") {
-    var endEl = document.getElementById("cliente-endereco");
-    if (endEl) endEl.focus();
-  }
+  var endEl = document.getElementById("cliente-endereco");
+  if (endEl) endEl.focus();
 }
 
 function atualizarTextoCupom() {
