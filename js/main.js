@@ -316,7 +316,7 @@ function RODAPE_HTML() {
 
 /* ---------- Horário de funcionamento ---------- */
 var HORARIO_LOJA = {
-  fuso: "America/Sao_Paulo",
+  fuso: "America/Porto_Velho",
   dias: "Todos os dias",
   faixas: [
     ["09:00", "12:00"],
