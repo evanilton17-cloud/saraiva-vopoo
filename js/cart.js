@@ -133,6 +133,7 @@ function fecharCarrinho() {
 
 var cupomCorrente = null;
 var pagamentoCorrente = "";
+var bairroManual = false;
 var entregaCorrente = "Entrega";
 var textoCupomCorrente = "";
 var pedidoRegistrado = false;
@@ -189,8 +190,12 @@ function montarTextoPedido() {
     "Pedido: " + cupomCorrente + "\n" +
     (campos.nome ? "Nome: " + campos.nome + "\n" : "") +
     todo +
-    "\n\nTotal: " +
+    "\n\nSubtotal: " +
     formatarPreco(totalPreco()) +
+    "\nTaxa de entrega (" + campos.bairro + "): " +
+    formatarPreco(campos.taxa) +
+    "\nTotal: " +
+    formatarPreco(totalPreco() + campos.taxa) +
     "\n" + campos.linha +
     (pagamentoCorrente ? "\nPagamento: " + pagamentoCorrente : "");
   return texto;
@@ -199,15 +204,22 @@ function montarTextoPedido() {
 function campoEntrega() {
   var nomeEl = document.getElementById("cliente-nome");
   var endEl = document.getElementById("cliente-endereco");
+  var bairroEl = document.getElementById("cliente-bairro");
   var nome = nomeEl ? nomeEl.value.trim() : nomeSalvo;
   var endereco = endEl ? endEl.value.trim() : "";
+  var chave = bairroEl && bairroEl.value ? bairroEl.value : chaveEntregaPorEndereco(endereco);
+  var bairro = nomeDaChaveEntrega(chave);
+  var taxa = taxaDaChaveEntrega(chave);
   entregaCorrente = "Entrega";
   return {
     nome: nome,
     tipo: "Entrega",
     endereco: endereco,
-    detalhe: endereco,
-    linha: "Entrega: " + endereco
+    chave: chave,
+    bairro: bairro,
+    taxa: taxa,
+    detalhe: endereco + " · " + bairro + " · taxa " + formatarPreco(taxa),
+    linha: "Entrega: " + endereco + "\nBairro: " + bairro + " · Taxa: " + formatarPreco(taxa)
   };
 }
 
@@ -272,6 +284,41 @@ function botaoEntrega(tipo) {
   );
 }
 
+function opcoesBairro(atual) {
+  var opcoes = REGRAS_ENTREGA.map(function (r) {
+    return (
+      '<option value="' + r.chave + '"' + (r.chave === atual ? " selected" : "") + ">" +
+      r.nome + " — " + formatarPreco(r.taxa) +
+      "</option>"
+    );
+  });
+  opcoes.push(
+    '<option value="outro"' + (atual === "outro" ? " selected" : "") + ">" +
+      "Outro bairro — " + formatarPreco(TAXA_PADRAO_ENTREGA) +
+      "</option>"
+  );
+  return opcoes.join("");
+}
+
+function atualizarTotaisCarrinho() {
+  var campos = campoEntrega();
+  var label = document.getElementById("taxa-entrega-label");
+  var valor = document.getElementById("taxa-entrega-valor");
+  var total = document.getElementById("total-com-taxa");
+  if (label) label.textContent = "Taxa de entrega (" + campos.bairro + ")";
+  if (valor) valor.textContent = formatarPreco(campos.taxa);
+  if (total) total.textContent = formatarPreco(totalPreco() + campos.taxa);
+  atualizarTextoCupom();
+}
+
+function sincronizarBairroComEndereco() {
+  var endEl = document.getElementById("cliente-endereco");
+  var sel = document.getElementById("cliente-bairro");
+  if (!endEl || !sel) return;
+  if (!bairroManual) sel.value = chaveEntregaPorEndereco(endEl.value);
+  atualizarTotaisCarrinho();
+}
+
 function renderizarCarrinho() {
   var itens = document.getElementById("carrinho-itens");
   var rodape = document.getElementById("carrinho-rodape");
@@ -297,21 +344,29 @@ function renderizarCarrinho() {
     '<input type="text" id="cliente-nome" placeholder="Como podemos te chamar?" maxlength="60" value="' +
     escapeAttr(cliente.nome) +
     '"></div>' +
-    '<div class="campo"><label>Entrega</label>' +
-    '<p style="font-size:13px;color:var(--muted, #888);margin:0 0 8px;">Entrega a combinar (taxa conforme região).</p></div>' +
     '<div class="campo" id="campo-endereco">' +
     '<label for="cliente-endereco">Endereço de entrega</label>' +
     '<input type="text" id="cliente-endereco" placeholder="Rua, número, bairro" maxlength="120" value="' +
     escapeAttr(cliente.endereco) +
     '"></div>' +
+    '<div class="campo"><label for="cliente-bairro">Bairro ou rua (taxa de entrega)</label>' +
+    '<select id="cliente-bairro">' + opcoesBairro(cliente.chave) + "</select>" +
+    '<p style="font-size:12px;color:var(--muted, #888);margin:6px 0 0;">A taxa é preenchida automaticamente quando o bairro ou a rua T (T1, T2, T3...) aparece no endereço. Outros bairros: ' +
+    formatarPreco(TAXA_PADRAO_ENTREGA) + ".</p></div>" +
     '<div class="campo"><label>Pagamento</label>' +
     '<div class="pagto-opcoes" id="pagamento-opcoes">' +
     botaoPagamento("Dinheiro") +
     botaoPagamento("Cartão") +
     botaoPagamento("Pix") +
     "</div></div>" +
-    '<div class="total-linha"><span>Total</span><strong>' +
+    '<div class="total-linha"><span>Subtotal</span><span>' +
     formatarPreco(totalPreco()) +
+    "</span></div>" +
+    '<div class="total-linha"><span id="taxa-entrega-label">Taxa de entrega (' + escapeAttr(cliente.bairro) + ')</span><span id="taxa-entrega-valor">' +
+    formatarPreco(cliente.taxa) +
+    "</span></div>" +
+    '<div class="total-linha"><span>Total</span><strong id="total-com-taxa">' +
+    formatarPreco(totalPreco() + cliente.taxa) +
     "</strong></div>" +
     '<button class="btn btn-primario" id="carrinho-chekout">Finalizar pedido</button>';
 }
@@ -392,7 +447,9 @@ function registrarVendaAuto() {
     itens: carrinho.map(function (it) {
       return { nome: it.nome, sabor: it.sabor, qtd: it.qtd, valor: it.preco };
     }),
-    total: totalPreco(),
+    total: totalPreco() + campos.taxa,
+    taxaEntrega: campos.taxa,
+    bairro: campos.bairro,
     pagamento: pagamentoCorrente,
     entrega: campos.detalhe,
     endereco: campos.endereco
@@ -416,6 +473,7 @@ function registrarVendaAuto() {
 function limparCarrinho() {
   cupomCorrente = null;
   pagamentoCorrente = "";
+  bairroManual = false;
   textoCupomCorrente = "";
   pedidoRegistrado = false;
   carrinho = [];
@@ -566,7 +624,14 @@ function initCarrinho() {
       try { localStorage.setItem("sv_cliente_nome", el.value); } catch (err) {}
     }
     if (el.id === "cliente-endereco") {
-      atualizarTextoCupom();
+      sincronizarBairroComEndereco();
+    }
+  });
+
+  document.addEventListener("change", function (e) {
+    if (e.target && e.target.id === "cliente-bairro") {
+      bairroManual = true;
+      atualizarTotaisCarrinho();
     }
   });
 
