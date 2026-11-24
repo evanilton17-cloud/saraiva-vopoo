@@ -1899,16 +1899,16 @@ body.tem-barra {
 #cliente-bairro {
   color-scheme: dark;
   background: var(--painel);
-  color: #4d8dff;
-  border-color: rgba(77, 141, 255, 0.28);
+  color: var(--texto);
+  border-color: var(--borda-forte);
   font-weight: 600;
 }
 #cliente-bairro:focus {
-  border-color: var(--accent-1);
+  border-color: var(--accent-ring);
 }
 #cliente-bairro option {
   background: var(--painel);
-  color: #4d8dff;
+  color: var(--texto);
 }
 #cliente-bairro option:checked {
   background: var(--accent-1);
