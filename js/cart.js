@@ -285,18 +285,15 @@ function botaoEntrega(tipo) {
 }
 
 function opcoesBairro(atual) {
-  var opcoes = REGRAS_ENTREGA.map(function (r) {
-    return (
+  var semBairro = !atual || atual === "outro";
+  var opcoes = ['<option value="" disabled' + (semBairro ? " selected" : "") + ">Selecione o bairro</option>"];
+  REGRAS_ENTREGA.forEach(function (r) {
+    opcoes.push(
       '<option value="' + r.chave + '"' + (r.chave === atual ? " selected" : "") + ">" +
       r.nome + " — " + formatarPreco(r.taxa) +
       "</option>"
     );
   });
-  opcoes.push(
-    '<option value="outro"' + (atual === "outro" ? " selected" : "") + ">" +
-      "Outro bairro — " + formatarPreco(TAXA_PADRAO_ENTREGA) +
-      "</option>"
-  );
   return opcoes.join("");
 }
 
@@ -315,7 +312,10 @@ function sincronizarBairroComEndereco() {
   var endEl = document.getElementById("cliente-endereco");
   var sel = document.getElementById("cliente-bairro");
   if (!endEl || !sel) return;
-  if (!bairroManual) sel.value = chaveEntregaPorEndereco(endEl.value);
+  if (!bairroManual) {
+    var chave = chaveEntregaPorEndereco(endEl.value);
+    sel.value = chave === "outro" ? "" : chave;
+  }
   atualizarTotaisCarrinho();
 }
 
