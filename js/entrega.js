@@ -3,7 +3,7 @@
    Bairros fora da lista pagam a taxa padrão. Ruas "T" (T1, T2, T3...)
    também entram na taxa de R$ 15,00. */
 
-var TAXA_PADRAO_ENTREGA = 15;
+var TAXA_PADRAO_ENTREGA = 10;
 
 var REGRAS_ENTREGA = [
   {
