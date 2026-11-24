@@ -1894,6 +1894,27 @@ body.tem-barra {
   border-color: var(--accent-ring);
 }
 
+/* Seletor de bairro: fundo escuro e fonte azul clara, inclusive na lista
+   nativa do navegador (que senão abre branca com letra branca). */
+#cliente-bairro {
+  color-scheme: dark;
+  background: var(--painel);
+  color: #cfe0ff;
+  border-color: rgba(77, 141, 255, 0.28);
+  font-weight: 600;
+}
+#cliente-bairro:focus {
+  border-color: var(--accent-1);
+}
+#cliente-bairro option {
+  background: var(--painel);
+  color: #cfe0ff;
+}
+#cliente-bairro option:checked {
+  background: var(--accent-1);
+  color: #05070d;
+}
+
 .total-linha {
   display: flex;
   align-items: center;
